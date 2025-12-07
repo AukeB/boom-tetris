@@ -1,46 +1,57 @@
-# Ignore folders
+# Folders
 __pycache__/
-.ruff_cache/
 .vscode/
+.ruff_cache/
+.ipynb_checkpoints/
 data/
+artifacts/
 
-# Virtual environment folders
+# Virtual environments
 venv/
+.venv/
 .env/
-.venv
 
-# Compiled Python files
+# Python bytecode
 *.pyc
 *.pyo
 *.pyd
 
-# Test coverage reports
+# Test and coverage
 htmlcov/
 .coverage
+.coverage.*
 *.cover
 .cache
 .nox/
 
-# Distribution/build files
+# Packaging and build
 build/
 dist/
 *.egg-info/
 .eggs/
+*.manifest
+*.spec
 
 # Logs
 *.log
 *.out
 *.err
 
-# Ignore OS-specific files
+# OS-specific files (macOS + Windows)
 .DS_Store
 .AppleDouble
 ._*
 Thumbs.db
 Desktop.ini
 
-# Temporary files
+# Temporary and backup files
 *.tmp
+*.temp
+*.bak
+*.swp
+*.swo
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
+# Project-specific
+bitmaps/.~lock*
+bitmaps/.~lock.*#
+**/readme.todo
