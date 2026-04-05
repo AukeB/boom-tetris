@@ -148,41 +148,78 @@ class ConfigManager:
 
     def _add_computational_parameters(self, config: DotDict) -> DotDict:
         """
-        Computations:
+        Adds computed layout parameters to config.
 
-        - Total number of rows on board, there are a couple of hidden
-            rows to make sure pieces can rotate right at the spawn
-            location.
-        - Board size (left, top, width, height), based on the window
-            size (width, height and margin).
-        - Cell width and height, based on the board width and height and
-            the number of cells the board consists of (default values
-            are 20 rows and 10 columns).
+        Computes board geometry in three phases. The core challenge is a
+        chicken-and-egg problem: cell size depends on board size, but board
+        size depends on the space reserved for UI elements like the line
+        counter field, which is ideally expressed in terms of cell size.
+
+        This is resolved by computing geometry twice via a scale_ratio,
+        first for a board that fills all available space, then rescaling to
+        fit the actual available space after accounting for UI elements. This
+        works because all dimensions scale linearly, so the ratios remain
+        correct regardless of the initial values.
+
+        The three phases are:
+        - Initial: base dimensions from window size and margin.
+        - Hidden rows: rescale so that hidden rows sit above the visible
+            area, allowing pieces to rotate at spawn without being visible.
+        - Line counter: rescale again to reserve space for the line counter
+            field above the board, maintaining square cells throughout.
+
+        Args:
+            config: DotDict containing window and board configuration,
+                including dimensions, margin ratio, and polyomino settings.
+
+        Returns:
+            The same config object with computed layout parameters added,
+                including board rect, cell size, margin, and spawn positions.
         """
         # Computations.
+
+        # Intitial computations.
         rows_total = config.BOARD.DIMENSIONS.ROWS + config.BOARD.DIMENSIONS.ROWS_HIDDEN
-
         window_horizontal_mid = config.WINDOW.WIDTH / 2
-        board_height = config.WINDOW.HEIGHT - (2 * config.WINDOW.MARGIN)
-        board_width = board_height * (config.BOARD.DIMENSIONS.COLS / rows_total)
+        margin = config.WINDOW.HEIGHT / config.WINDOW.RATIO_MARGIN_TO_WINDOW_HEIGHT
+        unscaled_board_height = config.WINDOW.HEIGHT - (2 * margin)
+        board_width = unscaled_board_height * (
+            config.BOARD.DIMENSIONS.COLS / rows_total
+        )
         board_left = window_horizontal_mid - board_width / 2
-        board_top = config.WINDOW.MARGIN
-
+        board_top = margin
         cell_width = board_width / config.BOARD.DIMENSIONS.COLS
-        cell_height = board_height / rows_total
+        cell_height = unscaled_board_height / rows_total
 
         # Computations so that we can block the hidden rows.
         scale_ratio = rows_total / config.BOARD.DIMENSIONS.ROWS
-
         cell_height *= scale_ratio
         cell_width *= scale_ratio
-
         board_top -= config.BOARD.DIMENSIONS.ROWS_HIDDEN * cell_height
-        board_height *= scale_ratio
+        board_height = unscaled_board_height * scale_ratio
         board_width *= scale_ratio
         board_left = window_horizontal_mid - board_width / 2
 
+        # Computations to add line counter field above the board.
+        line_counter_height = 2 * cell_height
+        scale_ratio = (
+            config.WINDOW.HEIGHT - (2 * margin) - line_counter_height - margin
+        ) / unscaled_board_height
+        cell_height *= scale_ratio
+        cell_width *= scale_ratio
+        board_height *= scale_ratio
+        board_width *= scale_ratio
+        board_left = window_horizontal_mid - board_width / 2
+        board_top = (
+            margin
+            + line_counter_height
+            + margin
+            - (config.BOARD.DIMENSIONS.ROWS_HIDDEN * cell_height)
+        )
+
         # Adding computed parameters back to config.
+        config.WINDOW.MARGIN = margin
+
         config.BOARD.DIMENSIONS.ROWS_TOTAL = rows_total
 
         config.BOARD.RECT = {

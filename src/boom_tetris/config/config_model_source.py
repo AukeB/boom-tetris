@@ -29,9 +29,10 @@ class ConfigModelSource(ConfiguredBaseModel):
 
             BACKGROUND: list[UInt8]
 
+        RATIO_MARGIN_TO_WINDOW_HEIGHT: int
         WIDTH: Computed
         HEIGHT: Computed
-        MARGIN: int
+        MARGIN: Computed
         COLOR: Color
 
     class Board(ConfiguredBaseModel):
