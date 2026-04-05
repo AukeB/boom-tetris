@@ -17,6 +17,7 @@ class Config:
     def __init__(self, config_path: str) -> None:
         self.config_path = config_path
 
+    @staticmethod
     def load_config(
         file_path: str, validate: bool = True, file_type: str = "yaml"
     ) -> ConfigModel | DotDict:
@@ -137,23 +138,24 @@ class Config:
         with open(file_path, "w") as file:
             yaml.dump(config_dict_formatted, file)
 
-    def augment_config(self, config) -> ConfigModel:
+    def augment_config(self, config: ConfigModel) -> ConfigModel:
         """ """
         # Convert from Pydantic Basemodel to dictionary and then to DotDict
         # instance, to keep using dot notation for dictionary keys and values.
         config = DotDict(config.model_dump())
 
         augmented_config: DotDict = self._add_computational_parameters(config=config)
-        augmented_config: DotDict = self._add_all_polyonomios(config=config)
+        augmented_config = self._add_all_polyonomios(config=config)
 
         self._write_config(
             file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH, config=augmented_config
         )
 
-        augmented_config: ConfigModel = Config.load_config(
+        augmented_config = Config.load_config(
             file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH
         )
+        assert isinstance(augmented_config, ConfigModel)
 
-        augmented_config: ConfigModel = self._change_data_types(config=augmented_config)
+        augmented_config = self._change_data_types(config=augmented_config)
 
         return augmented_config

@@ -1,6 +1,8 @@
 """ """
 
 import itertools
+from collections.abc import Iterator
+
 import pygame as pg
 
 from src.boom_tetris.config.model import ConfigModel
@@ -57,9 +59,9 @@ class Board:
     def collision(
         self,
         polyomino: Polyomino,
-        move_direction: Position[int, int] = Position(0, 0),
+        move_direction: Position = Position(0, 0),
         rotate_direction: int = 0,
-    ) -> None:
+    ) -> bool:
         """ """
         for block in polyomino.get_rotation(rotate_direction):
             boundary_position = Position(
@@ -99,7 +101,7 @@ class Board:
 
         return lines_cleared
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[tuple[int, int]]:
         """ """
         return itertools.product(
             range(self.dimensions.rows), range(self.dimensions.cols)

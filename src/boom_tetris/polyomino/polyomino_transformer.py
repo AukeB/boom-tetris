@@ -2,30 +2,34 @@
 
 import json
 
-from src.boom_tetris.utils.dict_utils import DotDict
 from src.boom_tetris.config.model import ConfigModel
-from src.boom_tetris.constants import (
-    TETROMINO_PROPERTIES_RELATIVE_FILE_PATH,
-)
+from src.boom_tetris.constants import TETROMINO_PROPERTIES_RELATIVE_FILE_PATH
+from src.boom_tetris.utils.dict_utils import DotDict
 
 
 class PolyominoTransformer:
     """ """
 
-    def __init__(self, config: ConfigModel):
+    def __init__(self, config: ConfigModel) -> None:
         """ """
-        self.polyominos: list[list[list[int, int]]] = config.POLYOMINO.ALL_SHAPES
+        self.polyominos: list[list[list[int]]] = (
+            config.POLYOMINO.ALL_SHAPES
+            if config.POLYOMINO.ALL_SHAPES is not None
+            else []
+        )
         self.polyomino_size = config.POLYOMINO.SIZE
-        self.polyomino_mapping: dict = self._load_polyomino_properties()
+        self.polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = (
+            self._load_polyomino_properties()
+        )
         self._sort()
 
     def _load_polyomino_properties(
         self,
-    ) -> dict:
+    ) -> dict[tuple[tuple[int, int], ...], DotDict]:
         """ """
         if self.polyomino_size == 3:
-            pass
-        elif self.polyomino_size == 4:
+            return {}
+        if self.polyomino_size == 4:
             with open(TETROMINO_PROPERTIES_RELATIVE_FILE_PATH, "r") as file:
                 polyomino_mapping = json.load(file)
 
@@ -43,12 +47,10 @@ class PolyominoTransformer:
                 )
 
             return polyomino_mapping
-        else:
-            pass
 
-    def _sort(
-        self,
-    ) -> list[list[list[int, int]]]:
+        return {}
+
+    def _sort(self) -> None:
         """ """
         # Sort the polyominos.
         self.polyominos = list(
@@ -56,7 +58,7 @@ class PolyominoTransformer:
         )
 
         # Sort the polyomino mapping.
-        sorted_polyomino_mapping = {}
+        sorted_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
         for k, _ in self.polyomino_mapping.items():
             sorted_key = tuple(sorted(k))
@@ -64,11 +66,9 @@ class PolyominoTransformer:
 
         self.polyomino_mapping = dict(sorted(sorted_polyomino_mapping.items()))
 
-    def _rotate(
-        self,
-    ) -> None:
+    def _rotate(self) -> None:
         """ """
-        updated_polyomino_mapping = {}
+        updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
         for i, (polyomino, (_, polyomino_properties)) in enumerate(
             zip(self.polyominos, self.polyomino_mapping.items())
@@ -87,22 +87,20 @@ class PolyominoTransformer:
 
                 self.polyominos[i] = rotated_polyomino
                 updated_polyomino_mapping[
-                    tuple(tuple(block) for block in rotated_polyomino)
+                    tuple((block[0], block[1]) for block in rotated_polyomino)
                 ] = polyomino_properties
             else:
                 updated_polyomino_mapping[
-                    tuple(tuple(block) for block in polyomino)
+                    tuple((block[0], block[1]) for block in polyomino)
                 ] = polyomino_properties
 
         self.polyomino_mapping = updated_polyomino_mapping
 
         self._sort()
 
-    def _shift(
-        self,
-    ) -> None:
+    def _shift(self) -> None:
         """ """
-        updated_polyomino_mapping = {}
+        updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
         for i, (polyomino, (_, polyomino_properties)) in enumerate(
             zip(self.polyominos, self.polyomino_mapping.items())
@@ -120,26 +118,24 @@ class PolyominoTransformer:
 
                 self.polyominos[i] = shifted_polyomino
                 updated_polyomino_mapping[
-                    tuple(tuple(block) for block in shifted_polyomino)
+                    tuple((block[0], block[1]) for block in shifted_polyomino)
                 ] = polyomino_properties
             else:
                 updated_polyomino_mapping[
-                    tuple(tuple(block) for block in polyomino)
+                    tuple((block[0], block[1]) for block in polyomino)
                 ] = polyomino_properties
 
         self.polyomino_mapping = updated_polyomino_mapping
 
         self._sort()
 
-    def _mirror_horizontally(
-        self,
-    ) -> list[list[list[int, int]]]:
+    def _mirror_horizontally(self) -> None:
         """
         Needs to happen because positive y-direction of the board is
         downwards, while the positive y-direction in a polyomino
         definition is upwards.
         """
-        updated_polyomino_mapping = {}
+        updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
         for i, (polyomino, (_, polyomino_properties)) in enumerate(
             zip(self.polyominos, self.polyomino_mapping.items())
@@ -148,14 +144,19 @@ class PolyominoTransformer:
 
             self.polyominos[i] = mirrored_polyomino
             updated_polyomino_mapping[
-                tuple(tuple(block) for block in mirrored_polyomino)
+                tuple((block[0], block[1]) for block in mirrored_polyomino)
             ] = polyomino_properties
 
         self.polyomino_mapping = updated_polyomino_mapping
 
         self._sort()
 
-    def execute(self):
+    def execute(
+        self,
+    ) -> (
+        tuple[list[list[list[int]]], dict[tuple[tuple[int, int], ...], DotDict]]
+        | list[list[list[int]]]
+    ):
         """ """
         if self.polyomino_size == 4:
             self._rotate()
@@ -164,5 +165,4 @@ class PolyominoTransformer:
 
             return self.polyominos, self.polyomino_mapping
 
-        else:
-            return self.polyominos
+        return self.polyominos

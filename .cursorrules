@@ -1,0 +1,29 @@
+# Cursor rules
+
+## Scope and intent
+- Change only what the task requires. Avoid drive-by refactors, unrelated files, and scope creep.
+
+## Python style
+
+- **Versions**: Use modern Python (3.10+): built-in generics (`list[str]`, `tuple[int, int]`), union as `X | None`.
+- **Typing**: Add type hints on public functions and methods; use precise types (`np.ndarray`, `Path`, `tuple[int, int, int]` for RGB).
+- **Naming**: `snake_case` for functions and variables; `PascalCase` for classes; `UPPER_SNAKE` for module-level constants. Prefix internal helpers with `_`.
+- **Imports**: Group stdlib, then third party, then local. One import per line in `from x import (...)` blocks when listing several names. Common aliases: `numpy as np`, `pygame as pg`, `matplotlib.pyplot as plt`.
+- **Layout**: Use section headers like `# Imports`, `# Functions`, `# Classes` to mirror existing modules.
+- **File and directory paths**: Use `Path` from `pathlib` for filesystem paths. 
+
+## Docstrings and comments
+
+- **Modules**: One-line module docstring describing purpose.
+- **Classes**: Short summary line; expand in `__init__` with an **Args:** section (and **Returns:** / **Notes:** when useful). Use full sentences; mention units (e.g. pixels, frames per second) where relevant.
+- **Functions**: Document non-obvious behavior, parameters, and return values. For math-heavy or interactive code, **Notes:** can explain invariants and design tradeoffs.
+- **Constants**: For non-trivial config, use a short comment or a module-level string block before the value.
+- Do not add docstrings that merely restate the identifier. Do not strip existing comments or docs when editing nearby code.
+
+## Whitespace
+- Add a blank line before and after codeblocks that have indentation
+- Add a blank line before `return` statements.
+
+## Numerics and performance
+
+- Prefer explicit dtypes where it matters (e.g. `np.float32` for simulation grids).

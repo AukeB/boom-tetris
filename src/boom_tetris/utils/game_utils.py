@@ -11,7 +11,7 @@ def compute_first_level_advancement(start_level: int) -> int:
     return min(start_level * 10 + 10, max(100, start_level * 10 - 50))
 
 
-def get_frames_per_cell(level: int, frames_per_cell: dict[int, int]) -> None:
+def get_frames_per_cell(level: int, frames_per_cell: dict[int, int]) -> int:
     """ """
     while level not in frames_per_cell:
         level -= 1

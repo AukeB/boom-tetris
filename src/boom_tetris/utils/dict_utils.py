@@ -1,11 +1,13 @@
 """ """
 
-from typing import Union, Any
+from typing import Any, Union
+
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 
 def format_for_writing_to_yaml_file(
-    obj: Union[dict, list, Any], path=None
+    obj: Union[dict[Any, Any], list[Any], Any],
+    path: list[str | int] | None = None,
 ) -> Union[CommentedMap, CommentedSeq, Any]:
     """ """
     path = path or []
@@ -45,10 +47,10 @@ def format_for_writing_to_yaml_file(
         return obj
 
 
-class DotDict(dict):
+class DotDict(dict[Any, Any]):
     """ """
 
-    def __init__(self, data=None):
+    def __init__(self, data: dict[Any, Any] | None = None) -> None:
         """ """
         super().__init__()
         data = data or {}
@@ -56,35 +58,36 @@ class DotDict(dict):
         for key, value in data.items():
             self[key] = self._wrap(value)
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         """ """
         try:
             return self[attr]
         except KeyError as e:
             raise AttributeError(f"'DotDict' object has no attribute '{attr}'") from e
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: Any) -> None:
         """ """
         self[key] = self._wrap(value)
 
-    def __delattr__(self, key):
+    def __delattr__(self, key: str) -> None:
         """ """
         try:
             del self[key]
         except KeyError as e:
             raise AttributeError(f"'DotDict' object has no attribute '{key}'") from e
 
-    def _wrap(self, value):
+    def _wrap(self, value: Any) -> Any:
         """ """
         if isinstance(value, dict):
             return DotDict(value)
         elif isinstance(value, list):
             return [self._wrap(v) for v in value]
+
         return value
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[Any, Any]:
         """ """
-        result = {}
+        result: dict[Any, Any] = {}
 
         for key, value in self.items():
             if isinstance(value, DotDict):

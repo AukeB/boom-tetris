@@ -6,7 +6,7 @@ import pygame as pg
 from src.boom_tetris.board import Board
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.renderer import Renderer
-from src.boom_tetris.config.config import Config
+from src.boom_tetris.config.model import ConfigModel
 from src.boom_tetris.utils.game_utils import (
     convert_drop_frames_to_time,
     compute_first_level_advancement,
@@ -20,7 +20,7 @@ from src.boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
 class Game:
     """ """
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: ConfigModel) -> None:
         """ """
         # General
         self.config = config
@@ -93,7 +93,7 @@ class Game:
             frames_per_cell=frames_per_cell,
         )
 
-    def initialize_scoring_dictionary(self) -> dict:
+    def initialize_scoring_dictionary(self) -> dict[int, int]:
         """ """
         single_points = self.config.SCORE.SINGLE
         double_points = single_points * self.config.SCORE.DOUBLE_MULTIPLIER
@@ -140,7 +140,7 @@ class Game:
             else:
                 self.hold_timer[direction] = 0
 
-    def handle_controls(self, event) -> None:
+    def handle_controls(self, event: pg.event.Event) -> None:
         """ """
         if event.type == pg.KEYDOWN:
             # Horizontal and vertical movement.
@@ -225,12 +225,12 @@ class Game:
 
         self.line_counter += lines_cleared
 
-    def update_score(self, level: int, lines_cleared: int):
+    def update_score(self, level: int, lines_cleared: int) -> None:
         """ """
         score_to_add = (level + 1) * self.score_dict[lines_cleared]
         self.score += score_to_add
 
-    def get_next_polyomino(self):
+    def get_next_polyomino(self) -> None:
         """ """
         # Place the polyomino on the board.
         self.board.place(self.polyomino)
@@ -265,7 +265,7 @@ class Game:
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[1],
         )
 
-    def handle_timers(self):
+    def handle_timers(self) -> None:
         """ """
         current_time = pg.time.get_ticks()
 
@@ -279,7 +279,7 @@ class Game:
                     self.get_next_polyomino()
                 self.last_drop_time = current_time
 
-    def update(self) -> callable:
+    def update(self) -> bool:
         """ """
         with self.renderer:
             self.renderer.draw_board(board=self.board)

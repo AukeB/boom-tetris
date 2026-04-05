@@ -31,7 +31,7 @@ class Score(StrictBaseModel):
 
 
 class Das(StrictBaseModel):
-    DIRECTIONS: list[str, str, str]
+    DIRECTIONS: list[str]
     DAS_DELAY_NTSC: int
     DAS_DELAY_PAL: int
     AUTO_REPEAT_RATE_NTSC: int
@@ -39,25 +39,25 @@ class Das(StrictBaseModel):
 
 
 class Directions(StrictBaseModel):
-    UP: list[IntDirection, IntDirection]
-    DOWN: list[IntDirection, IntDirection]
-    LEFT: list[IntDirection, IntDirection]
-    RIGHT: list[IntDirection, IntDirection]
+    UP: list[IntDirection]
+    DOWN: list[IntDirection]
+    LEFT: list[IntDirection]
+    RIGHT: list[IntDirection]
     ROTATE_CLOCKWISE: Literal[1, -1]
     ROTATE_COUNTERCLOCKWISE: Literal[1, -1]
 
 
 class Polyomino(StrictBaseModel):
-    COLOR: list[UInt8, UInt8, UInt8]
+    COLOR: list[UInt8]
     SIZE: int
-    ALL_SHAPES: list | None = None
-    SPAWN_POSITION: list[int, int] | None = None
-    SPAWN_POSITION_NEXT: list[int, int] | None = None
+    ALL_SHAPES: list[list[list[int]]] | None = None
+    SPAWN_POSITION: list[int] | None = None
+    SPAWN_POSITION_NEXT: list[int] | None = None
 
 
 class BoardGridLines(StrictBaseModel):
     ENABLED: bool
-    LINE_COLOR: list[UInt8, UInt8, UInt8]
+    LINE_COLOR: list[UInt8]
     LINE_WIDTH: int
 
 
@@ -67,7 +67,7 @@ class BoardCell(StrictBaseModel):
 
 
 class BoardColor(StrictBaseModel):
-    BACKGROUND: list[UInt8, UInt8, UInt8]
+    BACKGROUND: list[UInt8]
 
 
 class BoardRect(StrictBaseModel):
@@ -93,7 +93,7 @@ class Board(StrictBaseModel):
 
 
 class WindowColor(StrictBaseModel):
-    BACKGROUND: list[UInt8, UInt8, UInt8]
+    BACKGROUND: list[UInt8]
 
 
 class Window(StrictBaseModel):

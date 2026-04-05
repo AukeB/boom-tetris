@@ -2,9 +2,11 @@
 
 import pygame as pg
 
+from types import TracebackType
+
 from src.boom_tetris.board import Board
+from src.boom_tetris.config.model import ConfigModel
 from src.boom_tetris.polyomino.polyomino import Polyomino
-from src.boom_tetris.config.config import Config
 from src.boom_tetris.constants import Position
 
 
@@ -13,7 +15,7 @@ class Renderer:
 
     def __init__(
         self,
-        config: Config,
+        config: ConfigModel,
     ) -> None:
         """ """
         self.config = config
@@ -29,7 +31,12 @@ class Renderer:
         """ """
         self.surface.fill(color=self.background_color)
 
-    def __exit__(self, exc_tupe, exc_value, exc_trace) -> None:
+    def __exit__(
+        self,
+        exc_tupe: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_trace: TracebackType | None,
+    ) -> None:
         """ """
         pg.display.update()
 
