@@ -30,3 +30,6 @@ TETROMINO_PROPERTIES_RELATIVE_FILE_PATH = Path(
 Dimensions = namedtuple("Dimensions", "rows cols")
 Size = namedtuple("Size", "width height")
 Position = namedtuple("Position", "x y")
+
+# Determines the ratio between the PyGame window resolution and the screen resolution
+WINDOW_SIZE_SCREEN_FRACTION = 0.9

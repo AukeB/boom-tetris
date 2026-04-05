@@ -8,6 +8,7 @@ from src.boom_tetris.board import Board
 from src.boom_tetris.config.model import ConfigModel
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.constants import Position
+from src.boom_tetris.utils.screen_utils import get_window_size_from_screen_resolution
 
 
 class Renderer:
@@ -23,8 +24,8 @@ class Renderer:
             config: Augmented model with window and board layout.
         """
         self.config = config
-        self.window_width = self.config.WINDOW.WIDTH
-        self.window_height = self.config.WINDOW.HEIGHT
+        self.window_width, self.window_height = get_window_size_from_screen_resolution()
+
         self.background_color = self.config.WINDOW.COLOR.BACKGROUND
 
         self._initialize_window()

@@ -1,8 +1,10 @@
 """Load YAML config, augment with computed fields, and write derived files."""
 
+from pathlib import Path
 from ruamel.yaml import YAML
 
 from src.boom_tetris.config.model import ConfigModel
+from src.boom_tetris.utils.screen_utils import get_window_size_from_screen_resolution
 from src.boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
 from src.boom_tetris.utils.dict_utils import DotDict, format_for_writing_to_yaml_file
 from src.boom_tetris.constants import MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH, Position
@@ -14,12 +16,12 @@ yaml.indent(mapping=2, sequence=4, offset=2)
 class Config:
     """High-level configuration I/O and augmentation pipeline."""
 
-    def __init__(self, config_path: str) -> None:
+    def __init__(self, config_path: Path) -> None:
         self.config_path = config_path
 
     @staticmethod
     def load_config(
-        file_path: str, validate: bool = True, file_type: str = "yaml"
+        file_path: Path, validate: bool = True, file_type: str = "yaml"
     ) -> ConfigModel | DotDict:
         """Load a configuration file from disk.
 
@@ -39,6 +41,26 @@ class Config:
                 config = ConfigModel(**config)
             else:
                 config = DotDict(config)
+
+        return config
+
+    def _add_window_resolution(self, config: DotDict) -> DotDict:
+        """
+        Resolve the pygame window dimensions from the current screen size.
+
+        1. Call window_size_from_screen() to get the scaled desktop resolution.
+        2. Write the resulting width and height into config.WINDOW.
+
+        Args:
+            config: Mutable dot-config with a WINDOW section.
+
+        Returns:
+            Same config with WINDOW.WIDTH and WINDOW.HEIGHT populated.
+        """
+        window_width, window_height = get_window_size_from_screen_resolution()
+
+        config.WINDOW.WIDTH = window_width
+        config.WINDOW.HEIGHT = window_height
 
         return config
 
@@ -153,7 +175,7 @@ class Config:
 
         return config
 
-    def _write_config(self, file_path: str, config: DotDict) -> None:
+    def _write_config(self, file_path: Path, config: DotDict) -> None:
         """Serialize dot-config to YAML with ruamel formatting.
 
         Args:
@@ -166,7 +188,7 @@ class Config:
         with open(file_path, "w") as file:
             yaml.dump(config_dict_formatted, file)
 
-    def augment_config(self, config: ConfigModel) -> ConfigModel:
+    def augment_config(self, config: ConfigModel | DotDict) -> ConfigModel:
         """Compute board metrics, shapes, write YAML, reload, and fix types.
 
         Args:
@@ -179,7 +201,8 @@ class Config:
         # instance, to keep using dot notation for dictionary keys and values.
         config = DotDict(config.model_dump())
 
-        augmented_config: DotDict = self._add_computational_parameters(config=config)
+        augmented_config = self._add_window_resolution(config=config)
+        augmented_config = self._add_computational_parameters(config=config)
         augmented_config = self._add_all_polyonomios(config=config)
 
         self._write_config(

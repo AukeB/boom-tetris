@@ -1,109 +1,126 @@
 """Pydantic models for validating and typing game YAML configuration."""
 
-from pydantic import BaseModel, ConfigDict, conint
 from typing import Annotated, Literal
+
+from pydantic import BaseModel, ConfigDict, conint
 
 UInt8 = Annotated[int, conint(ge=0, le=255)]
 IntDirection = Literal[-1, 0, 1]
+Computed = Literal["COMPUTED"]
 
 
-class StrictBaseModel(BaseModel):
+class ConfiguredBaseModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class General(StrictBaseModel):
-    START_LEVEL: int
-    SOFT_DROP_SPEED: float
-    ARE_DELAY: int
-    NTSC_FRAMERATE: float
-    PAL_FRAMERATE: float
-    NTSC_DROP_FRAMES: dict[int, int]
-    PAL_DROP_FRAMES: dict[int, int]
+class ConfigModel(ConfiguredBaseModel):
+    """Root configuration model for the Tetris game."""
 
+    class Window(ConfiguredBaseModel):
+        """Window configuration for the game canvas."""
 
-class Score(StrictBaseModel):
-    SINGLE: int
-    DOUBLE_MULTIPLIER: float
-    TRIPLE_MULTIPLIER: float
-    TETRIS_MULTIPLIER: float
-    SOFT_DROP_PER_LINE: int
-    HARD_DROP_PER_LINE: int
+        class Color(ConfiguredBaseModel):
+            """Window color settings."""
 
+            BACKGROUND: list[UInt8]
 
-class Das(StrictBaseModel):
-    DIRECTIONS: list[str]
-    DAS_DELAY_NTSC: int
-    DAS_DELAY_PAL: int
-    AUTO_REPEAT_RATE_NTSC: int
-    AUTO_REPEAT_RATE_PAL: int
+        WIDTH: int | Computed
+        HEIGHT: int | Computed
+        MARGIN: int
+        COLOR: Color
 
+    class Board(ConfiguredBaseModel):
+        """Board layout, sizing, and visual configuration."""
 
-class Directions(StrictBaseModel):
-    UP: list[IntDirection]
-    DOWN: list[IntDirection]
-    LEFT: list[IntDirection]
-    RIGHT: list[IntDirection]
-    ROTATE_CLOCKWISE: Literal[1, -1]
-    ROTATE_COUNTERCLOCKWISE: Literal[1, -1]
+        class Dimensions(ConfiguredBaseModel):
+            """Row and column counts including hidden rows."""
 
+            ROWS: int
+            COLS: int
+            ROWS_HIDDEN: int
+            ROWS_TOTAL: int | Computed | None = None
 
-class Polyomino(StrictBaseModel):
-    COLOR: list[UInt8]
-    SIZE: int
-    ALL_SHAPES: list[list[list[int]]] | None = None
-    SPAWN_POSITION: list[int] | None = None
-    SPAWN_POSITION_NEXT: list[int] | None = None
+        class Rect(ConfiguredBaseModel):
+            """Pixel coordinates and size of the board rectangle."""
 
+            LEFT: int | float | Computed | None = None
+            TOP: int | float | Computed | None = None
+            WIDTH: int | float | Computed | None = None
+            HEIGHT: int | float | Computed | None = None
 
-class BoardGridLines(StrictBaseModel):
-    ENABLED: bool
-    LINE_COLOR: list[UInt8]
-    LINE_WIDTH: int
+        class Color(ConfiguredBaseModel):
+            """Board color settings."""
 
+            BACKGROUND: list[UInt8]
 
-class BoardCell(StrictBaseModel):
-    WIDTH: int | float
-    HEIGHT: int | float
+        class Cell(ConfiguredBaseModel):
+            """Pixel dimensions of a single board cell."""
 
+            WIDTH: int | float | Computed
+            HEIGHT: int | float | Computed
 
-class BoardColor(StrictBaseModel):
-    BACKGROUND: list[UInt8]
+        class GridLines(ConfiguredBaseModel):
+            """Grid line rendering configuration."""
 
+            ENABLED: bool
+            LINE_COLOR: list[UInt8]
+            LINE_WIDTH: int
 
-class BoardRect(StrictBaseModel):
-    LEFT: int | float | None = None
-    TOP: int | float | None = None
-    WIDTH: int | float | None = None
-    HEIGHT: int | float | None = None
+        DIMENSIONS: Dimensions
+        RECT: Rect | None = None
+        COLOR: Color
+        CELL: Cell | None = None
+        GRID_LINES: GridLines
 
+    class Polyomino(ConfiguredBaseModel):
+        """Polyomino shape, color, and spawn configuration."""
 
-class BoardDimensions(StrictBaseModel):
-    ROWS: int
-    COLS: int
-    ROWS_HIDDEN: int
-    ROWS_TOTAL: int | None = None
+        SIZE: int
+        COLOR: list[UInt8]
+        ALL_SHAPES: list[list[list[int]]] | Computed | None = None
+        SPAWN_POSITION: list[int] | Computed | None = None
+        SPAWN_POSITION_NEXT: list[int] | Computed | None = None
 
+    class Directions(ConfiguredBaseModel):
+        """Movement and rotation direction vectors."""
 
-class Board(StrictBaseModel):
-    DIMENSIONS: BoardDimensions
-    RECT: BoardRect | None = None
-    COLOR: BoardColor
-    CELL: BoardCell | None = None
-    GRID_LINES: BoardGridLines
+        UP: list[IntDirection]
+        DOWN: list[IntDirection]
+        LEFT: list[IntDirection]
+        RIGHT: list[IntDirection]
+        ROTATE_CLOCKWISE: Literal[1, -1]
+        ROTATE_COUNTERCLOCKWISE: Literal[1, -1]
 
+    class Das(ConfiguredBaseModel):
+        """Delayed auto-shift timing configuration."""
 
-class WindowColor(StrictBaseModel):
-    BACKGROUND: list[UInt8]
+        DIRECTIONS: list[str]
+        DAS_DELAY_NTSC: int
+        DAS_DELAY_PAL: int
+        AUTO_REPEAT_RATE_NTSC: int
+        AUTO_REPEAT_RATE_PAL: int
 
+    class Score(ConfiguredBaseModel):
+        """Scoring multipliers and per-line drop values."""
 
-class Window(StrictBaseModel):
-    WIDTH: int
-    HEIGHT: int
-    MARGIN: int
-    COLOR: WindowColor
+        SINGLE: int
+        DOUBLE_MULTIPLIER: float
+        TRIPLE_MULTIPLIER: float
+        TETRIS_MULTIPLIER: float
+        SOFT_DROP_PER_LINE: int
+        HARD_DROP_PER_LINE: int
 
+    class General(ConfiguredBaseModel):
+        """General game settings, framerates, and drop frame tables."""
 
-class ConfigModel(StrictBaseModel):
+        START_LEVEL: int
+        SOFT_DROP_SPEED: float
+        ARE_DELAY: int
+        NTSC_FRAMERATE: float
+        PAL_FRAMERATE: float
+        NTSC_DROP_FRAMES: dict[int, int]
+        PAL_DROP_FRAMES: dict[int, int]
+
     WINDOW: Window
     BOARD: Board
     POLYOMINO: Polyomino
