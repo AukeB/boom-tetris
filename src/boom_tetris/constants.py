@@ -5,8 +5,8 @@ from pathlib import Path
 
 # Main configuration relative file path.
 MAIN_CONFIG_RELATIVE_FILE_PATH = Path("src/boom_tetris/configs/main_config.yaml")
-MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH = Path(
-    "src/boom_tetris/configs/main_config_augmented.yaml"
+MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH = Path(
+    "src/boom_tetris/configs/main_config_updated.yaml"
 )
 
 # Polyomino properpties paths.

@@ -3,11 +3,11 @@
 from pathlib import Path
 from ruamel.yaml import YAML
 
-from src.boom_tetris.config.model import ConfigModel
+from src.boom_tetris.config.config_model import ConfigModel
 from src.boom_tetris.utils.screen_utils import get_window_size_from_screen_resolution
 from src.boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
 from src.boom_tetris.utils.dict_utils import DotDict, format_for_writing_to_yaml_file
-from src.boom_tetris.constants import MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH, Position
+from src.boom_tetris.constants import MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH, Position
 
 yaml = YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
@@ -201,19 +201,19 @@ class ConfigManager:
         # instance, to keep using dot notation for dictionary keys and values.
         config = DotDict(config.model_dump())
 
-        augmented_config = self._add_window_resolution(config=config)
-        augmented_config = self._add_computational_parameters(config=config)
-        augmented_config = self._add_all_polyonomios(config=config)
+        updated_config = self._add_window_resolution(config=config)
+        updated_config = self._add_computational_parameters(config=config)
+        updated_config = self._add_all_polyonomios(config=config)
 
         self._write_config(
-            file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH, config=augmented_config
+            file_path=MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH, config=updated_config
         )
 
-        augmented_config = ConfigManager.load_config(
-            file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH
+        updated_config = ConfigManager.load_config(
+            file_path=MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH
         )
-        assert isinstance(augmented_config, ConfigModel)
+        assert isinstance(updated_config, ConfigModel)
 
-        augmented_config = self._change_data_types(config=augmented_config)
+        updated_config = self._change_data_types(config=updated_config)
 
-        return augmented_config
+        return updated_config

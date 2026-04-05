@@ -5,7 +5,7 @@ from collections.abc import Iterator
 
 import pygame as pg
 
-from src.boom_tetris.config.model import ConfigModel
+from src.boom_tetris.config.config_model import ConfigModel
 from src.boom_tetris.constants import Dimensions, Position
 from src.boom_tetris.polyomino.polyomino import Polyomino
 

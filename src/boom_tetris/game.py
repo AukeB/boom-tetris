@@ -6,7 +6,7 @@ import pygame as pg
 from src.boom_tetris.board import Board
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.renderer import Renderer
-from src.boom_tetris.config.model import ConfigModel
+from src.boom_tetris.config.config_model import ConfigModel
 from src.boom_tetris.utils.game_utils import (
     convert_drop_frames_to_time,
     compute_first_level_advancement,
@@ -24,7 +24,7 @@ class Game:
         """Wire renderer, board, pieces, and timing state from ``config``.
 
         Args:
-            config: Fully augmented ``ConfigModel`` (after YAML augmentation).
+            config: Fully updated ``ConfigModel`` (after YAML augmentation).
         """
         # General
         self.config = config

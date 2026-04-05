@@ -2,12 +2,12 @@
 
 import random as rd
 
-from boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.constants import MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH
+from src.boom_tetris.config.config_manager import ConfigManager
+from src.boom_tetris.constants import MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH
 from src.boom_tetris.polyomino.polyomino_transformer import PolyominoTransformer
 
 config_main = ConfigManager.load_config(
-    file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH, validate=False
+    file_path=MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH, validate=False
 )
 
 polyomino_transformer = PolyominoTransformer(config=config_main)

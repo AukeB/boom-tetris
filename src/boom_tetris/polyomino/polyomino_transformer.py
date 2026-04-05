@@ -5,7 +5,7 @@ Sort, rotate, mirror, and shift blocks using optional JSON metadata.
 
 import json
 
-from src.boom_tetris.config.model import ConfigModel
+from src.boom_tetris.config.config_model import ConfigModel
 from src.boom_tetris.constants import (
     TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH,
     TETROMINO_PROPERTIES_RELATIVE_FILE_PATH,

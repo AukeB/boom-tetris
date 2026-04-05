@@ -5,7 +5,7 @@ import pygame as pg
 from types import TracebackType
 
 from src.boom_tetris.board import Board
-from src.boom_tetris.config.model import ConfigModel
+from src.boom_tetris.config.config_model import ConfigModel
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.constants import Position
 from src.boom_tetris.utils.screen_utils import get_window_size_from_screen_resolution
