@@ -7,8 +7,8 @@ WINDOW:
 
 BOARD:
   DIMENSIONS:
-    ROWS: 20
-    COLS: 10
+    ROWS: 40
+    COLS: 20
     ROWS_HIDDEN: 2
   COLOR:
     BACKGROUND: [55, 55, 55]

@@ -7,20 +7,20 @@ WINDOW:
 
 BOARD:
   DIMENSIONS:
-    ROWS: 20
-    COLS: 10
+    ROWS: 40
+    COLS: 20
     ROWS_HIDDEN: 2
-    ROWS_TOTAL: 22
+    ROWS_TOTAL: 42
   RECT:
     LEFT: 755.0
-    TOP: -102.00000000000003
+    TOP: -26.0
     WIDTH: 760.0
-    HEIGHT: 1672.0000000000002
+    HEIGHT: 1596.0
   COLOR:
     BACKGROUND: [55, 55, 55]
   CELL:
-    WIDTH: 76.00000000000001
-    HEIGHT: 76.00000000000001
+    WIDTH: 38.0
+    HEIGHT: 38.0
   GRID_LINES:
     ENABLED: true
     LINE_COLOR: [180, 180, 180]
@@ -37,8 +37,8 @@ POLYOMINO:
     - [[0, 0], [0, 1], [1, 0], [1, 1]]
     - [[0, 0], [0, 1], [0, 2], [0, 3]]
     - [[0, 0], [1, 0], [1, 1], [2, 1]]
-  SPAWN_POSITION: [5, 2]
-  SPAWN_POSITION_NEXT: [13, 3]
+  SPAWN_POSITION: [10, 2]
+  SPAWN_POSITION_NEXT: [23, 3]
 
 DIRECTIONS:
   UP: [0, -1]
