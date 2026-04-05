@@ -1,6 +1,6 @@
 WINDOW:
-  WIDTH: COMPUTED
-  HEIGHT: COMPUTED
+  WIDTH: 4608
+  HEIGHT: 2592
   MARGIN: 50
   COLOR:
     BACKGROUND: [255, 255, 255]
@@ -10,28 +10,35 @@ BOARD:
     ROWS: 20
     COLS: 10
     ROWS_HIDDEN: 2
-    ROWS_TOTAL: COMPUTED
+    ROWS_TOTAL: 22
   RECT:
-    LEFT: COMPUTED
-    TOP: COMPUTED
-    WIDTH: COMPUTED
-    HEIGHT: COMPUTED
+    LEFT: 1681.0
+    TOP: -199.2
+    WIDTH: 1246.0
+    HEIGHT: 2741.2
   COLOR:
     BACKGROUND: [55, 55, 55]
   CELL:
-    WIDTH: COMPUTED
-    HEIGHT: COMPUTED
+    WIDTH: 124.6
+    HEIGHT: 124.6
   GRID_LINES:
-    ENABLED: True
+    ENABLED: true
     LINE_COLOR: [180, 180, 180]
     LINE_WIDTH: 1
 
 POLYOMINO:
-  SIZE: 3
+  SIZE: 4
   COLOR: [200, 255, 200]
-  ALL_SHAPES: COMPUTED
-  SPAWN_POSITION: COMPUTED
-  SPAWN_POSITION_NEXT: COMPUTED
+  ALL_SHAPES:
+    - [[0, 0], [0, 1], [1, 1], [1, 2]]
+    - [[0, 1], [1, 0], [1, 1], [1, 2]]
+    - [[0, 0], [0, 1], [0, 2], [1, 0]]
+    - [[0, 0], [1, 0], [1, 1], [1, 2]]
+    - [[0, 0], [0, 1], [1, 0], [1, 1]]
+    - [[0, 0], [0, 1], [0, 2], [0, 3]]
+    - [[0, 0], [1, 0], [1, 1], [2, 1]]
+  SPAWN_POSITION: [5, 2]
+  SPAWN_POSITION_NEXT: [13, 3]
 
 DIRECTIONS:
   UP: [0, -1]
@@ -42,7 +49,7 @@ DIRECTIONS:
   ROTATE_COUNTERCLOCKWISE: -1
 
 DAS:
-  DIRECTIONS: ["LEFT", "RIGHT", "DOWN"]
+  DIRECTIONS: [LEFT, RIGHT, DOWN]
   DAS_DELAY_NTSC: 16
   DAS_DELAY_PAL: 12
   AUTO_REPEAT_RATE_NTSC: 6
@@ -50,18 +57,18 @@ DAS:
 
 SCORE:
   SINGLE: 40
-  DOUBLE_MULTIPLIER: 2.5 # A double is worth 2.5 times a single.
-  TRIPLE_MULTIPLIER: 3 # A triple is worth 3 times a double.
-  TETRIS_MULTIPLIER: 4 # A tetris is worth 4 times a triple.
+  DOUBLE_MULTIPLIER: 2.5
+  TRIPLE_MULTIPLIER: 3.0
+  TETRIS_MULTIPLIER: 4.0
   SOFT_DROP_PER_LINE: 1
   HARD_DROP_PER_LINE: 1
 
 GENERAL:
   START_LEVEL: 0
-  SOFT_DROP_SPEED: 0.5 # Units: Gravity. Definition of gravity: Gravity is expressed in unit G, where 1G = 1 cell per frame, and 0.1G = 1 cell per 10 frames
+  SOFT_DROP_SPEED: 0.5
   ARE_DELAY: 18
   NTSC_FRAMERATE: 60.0988
-  PAL_FRAMERATE: 50.0070
+  PAL_FRAMERATE: 50.007
   NTSC_DROP_FRAMES:
     0: 48
     1: 43

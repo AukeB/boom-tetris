@@ -1,29 +1,55 @@
-# Cursor rules
+Python coding style preferences
 
-## Scope and intent
-- Change only what the task requires. Avoid drive-by refactors, unrelated files, and scope creep.
+Module structure & imports
 
-## Python style
+Every file starts with a one-liner """Module for ...""" docstring.
+Import order: standard library → third-party → internal (src.*), each group separated by a blank line. No wildcard imports. typing imports go in the stdlib block.
+Commonly used packages are imported under standard aliases: pygame → pg, pandas → pd, numpy → np, random → rd. Use the alias consistently throughout the file — never mix pygame.X and pg.X.
+In entry-point functions like main(), all imports live inside the function body, not at the module top level.
 
-- **Versions**: Use modern Python (3.10+): built-in generics (`list[str]`, `tuple[int, int]`), union as `X | None`.
-- **Typing**: Add type hints on public functions and methods; use precise types (`np.ndarray`, `Path`, `tuple[int, int, int]` for RGB).
-- **Naming**: `snake_case` for functions and variables; `PascalCase` for classes; `UPPER_SNAKE` for module-level constants. Prefix internal helpers with `_`.
-- **Imports**: Group stdlib, then third party, then local. One import per line in `from x import (...)` blocks when listing several names. Common aliases: `numpy as np`, `pygame as pg`, `matplotlib.pyplot as plt`.
-- **Layout**: Use section headers like `# Imports`, `# Functions`, `# Classes` to mirror existing modules.
-- **File and directory paths**: Use `Path` from `pathlib` for filesystem paths. 
+Class design
 
-## Docstrings and comments
+Config models use Pydantic, subclassing a shared ConfiguredBaseModel with extra="forbid". Never plain dicts or dataclasses for structured config.
+Related config fields are grouped into nested inner classes inside the root model, each also extending ConfiguredBaseModel.
+Classes that handle loading/saving are separate from classes that use the data.
+__init__ unpacks config into named instance attributes, grouped with short # Category section comments. Only frequently-used values get flattened; everything else stays on self.config.
 
-- **Modules**: One-line module docstring describing purpose.
-- **Classes**: Short summary line; expand in `__init__` with an **Args:** section (and **Returns:** / **Notes:** when useful). Use full sentences; mention units (e.g. pixels, frames per second) where relevant.
-- **Functions**: Document non-obvious behavior, parameters, and return values. For math-heavy or interactive code, **Notes:** can explain invariants and design tradeoffs.
-- **Constants**: For non-trivial config, use a short comment or a module-level string block before the value.
-- Do not add docstrings that merely restate the identifier. Do not strip existing comments or docs when editing nearby code.
+Docstrings & comments
 
-## Whitespace
-- Add a blank line before and after codeblocks that have indentation
-- Add a blank line before `return` statements.
+Methods get an intent paragraph starting on the line immediately after the opening """, then a numbered list of steps, then Args and Returns blocks. Only include an Args block if the method has parameters beyond self; only include a Returns block if the method returns a value (i.e. not -> None).
+Long methods use short # Category comments as visual section separators, not inline end-of-line comments.
+Non-obvious boolean/flag attributes get a docstring directly below them (PEP 257 style), not an inline # comment.
+Genuine TODO/refactor notes stay visible in the code with a brief explanation.
 
-## Numerics and performance
+Naming conventions
 
-- Prefer explicit dtypes where it matters (e.g. `np.float32` for simulation grids).
+snake_case for everything except classes (PascalCase). No camelCase.
+All internal methods use a single leading underscore. Public API surface is narrow and intentional.
+Descriptive, self-documenting names. No single-letter variables except loop indices.
+
+Type annotations
+
+Every method has full parameter and return type annotations. -> None is always written explicitly.
+Annotate local variables only when the type is non-obvious or deviates from what a reader would expect, or when a variable is declared before assignment.
+Use Literal for fields that only accept specific values.
+
+Functions & logic
+
+Pipelines are split across dedicated methods with a clear phase separation (e.g. measure → align → position → draw). Orchestration lives in a higher-level method.
+Tree/recursive operations use recursion over iteration, with an explicit early-return base case.
+Guard clauses over deep nesting — return early when pre-conditions aren't met.
+namedtuple for simple value objects. Plain dict for internal data structures like tree nodes.
+
+Formatting & tooling
+
+Formatter and linter: Ruff, line length 88.
+Always add a blank line before a return statement, unless the function body is a single line or the return is inside a conditional block (e.g. if, for, while).
+Trailing commas in multi-line expressions.
+All file I/O uses context managers (with open(...) as file:).
+Project-wide constants live in a dedicated constants.py.
+All file paths use pathlib.Path, never raw strings.
+
+Entry point
+
+Always if __name__ == "__main__": main().
+main() is the sole orchestration point: loads config, loads data, wires dependencies explicitly. No global state or singletons.

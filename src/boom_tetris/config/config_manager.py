@@ -1,61 +1,130 @@
-"""Load YAML config, augment with computed fields, and write derived files."""
+"""Load YAML config, update with computed fields, and write derived files."""
 
 from pathlib import Path
 from ruamel.yaml import YAML
 
-from src.boom_tetris.config.config_model import ConfigModel
-from src.boom_tetris.utils.screen_utils import get_window_size_from_screen_resolution
+from src.boom_tetris.utils.utils_dict import DotDict
+from src.boom_tetris.config.config_model_source import ConfigModelSource
+from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
 from src.boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
-from src.boom_tetris.utils.dict_utils import DotDict, format_for_writing_to_yaml_file
-from src.boom_tetris.constants import MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH, Position
 
+from src.boom_tetris.constants import (
+    Position,
+    CONFIG_SOURCE_FILE_PATH,
+    CONFIG_RUNTIME_FILE_PATH,
+)
+
+from src.boom_tetris.utils.utils_other import (
+    get_window_size_from_screen_resolution,
+    normalize_float,
+)
+from src.boom_tetris.utils.utils_dict import format_for_writing_to_yaml_file
+
+
+# YAML parser and serializer using ruamel.yaml.
+# This instance allows reading and writing YAML files with indentation preserved.
 yaml = YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
 
 
 class ConfigManager:
-    """High-level configuration I/O and augmentation pipeline."""
+    """
+    High-level configuration I/O and update pipeline for Boom Tetris.
 
-    def __init__(self, config_path: Path) -> None:
+    Responsibilities:
+        - Load configuration files from disk.
+        - Compute derived runtime parameters (board dimensions, polyomino shapes, etc.).
+        - Serialize updated configuration to disk for runtime use.
+
+    Key Concepts:
+        - `config_source`: The editable, authoritative configuration loaded from
+          the source YAML file (`CONFIG_SOURCE_FILE_PATH`). Validated against
+          `ConfigModelSource`.
+        - `config_runtime`: The derived runtime configuration validated against
+          `ConfigModelRuntime`, including computed fields required for the
+          game to run. NOT edited manually.
+
+    Workflow:
+        The main workflow of this class is executed via the `get_runtime_config` method.
+
+        1. Loads the source config and validates it.
+        2. Converts it to a `DotDict` for easier mutation and addition of
+            computed fields (Pydantic models are immutable, so DotDict
+            makes adding dynamic fields convenient).
+        3. Computes board metrics, polyomino shapes, and other runtime parameters.
+        4. Writes the derived configuration to the runtime YAML file.
+        5. Reloads the runtime config and validates it as a `ConfigModelRuntime`.
+        6. Adjusts certain field types (e.g., directions to `Position` tuples).
+
+    Notes:
+        - `load_config_without_validation` is public because other modules
+          may need to load YAML data without converting it to a Pydantic model,
+          e.g., for temporary or partial inspection, manipulation, or testing.
+    """
+
+    def __init__(self) -> None:
         """
         Initialisation of the `ConfigManager` class.
 
         Args:
             config_path (Path): Path to the configuration file.
         """
-        self.config_path = config_path
+        self.config_source_file_path = CONFIG_SOURCE_FILE_PATH
+        self.config_runtime_file_path = CONFIG_RUNTIME_FILE_PATH
 
-    @staticmethod
-    def load_config(
-        file_path: Path, validate: bool = True, file_type: str = ".yaml"
-    ) -> ConfigModel | DotDict:
+    def load_config_without_validation(self, file_path: Path) -> DotDict:
         """
-        Load a configuration file from disk.
+        Load a YAML configuration file as a mutable DotDict.
 
-        1. Validate that the file type is supported.
-        2. Load the file contents using ruamel.yaml.
-        3. Return a validated ConfigModel or a DotDict depending on the validate flag.
+        This method reads a YAML file from disk and wraps its contents
+        in a `DotDict` to allow convenient dot-access for keys.
 
         Args:
-            file_path (Path): Path to the YAML file.
-            validate (bool): If True, return a ``ConfigModel``; else a ``DotDict``.
-            file_type (str): Format identifier; only ``.yaml`` is implemented.
+            file_path (Path): The path to the YAML file to load.
 
         Returns:
-            Parsed configuration as ``ConfigModel`` or ``DotDict``.
+            DotDict: The contents of the YAML file as a mutable dictionary
+                supporting attribute-style access.
         """
-        if file_type != ".yaml":
-            raise ValueError(
-                f"Unsupported file type '{file_type}'. Only '.yaml' is supported."
-            )
-
         with open(file_path) as file:
-            config = yaml.load(file)
+            return DotDict(yaml.load(file))
 
-        if validate:
-            return ConfigModel(**config)
+    def _load_source_config(self) -> ConfigModelSource:
+        """
+        Load the source configuration file and validate it against
+        `ConfigModelSource`.
 
-        return DotDict(config)
+        Returns:
+            ConfigModelSource: A validated configuration model representing
+            the editable source configuration.
+
+        Notes:
+            This is the “authoritative” config that you can edit manually
+            (`config.yaml`). It is converted to the Pydantic model to enforce
+            schema and type safety.
+        """
+        data = self.load_config_without_validation(self.config_source_file_path)
+
+        return ConfigModelSource(**data)
+
+    def _load_runtime_config(self) -> ConfigModelRuntime:
+        """
+        Load the runtime configuration file and validate it against
+        `ConfigModelRuntime`.
+
+        Returns:
+            ConfigModelRuntime: A validated configuration model ready for
+                use in the game runtime, with all computed fields included.
+
+        Notes:
+            This configuration is typically derived from the source config
+            via internal computations (board size, polyomino shapes, etc.).
+            It should not be manually edited. Use this for all runtime
+            operations.
+        """
+        data = self.load_config_without_validation(self.config_runtime_file_path)
+
+        return ConfigModelRuntime(**data)
 
     def _add_window_resolution(self, config: DotDict) -> DotDict:
         """
@@ -90,7 +159,6 @@ class ConfigManager:
             the number of cells the board consists of (default values
             are 20 rows and 10 columns).
         """
-
         # Computations.
         rows_total = config.BOARD.DIMENSIONS.ROWS + config.BOARD.DIMENSIONS.ROWS_HIDDEN
 
@@ -118,13 +186,16 @@ class ConfigManager:
         config.BOARD.DIMENSIONS.ROWS_TOTAL = rows_total
 
         config.BOARD.RECT = {
-            "LEFT": board_left,
-            "TOP": board_top,
-            "WIDTH": board_width,
-            "HEIGHT": board_height,
+            "LEFT": normalize_float(board_left),
+            "TOP": normalize_float(board_top),
+            "WIDTH": normalize_float(board_width),
+            "HEIGHT": normalize_float(board_height),
         }
 
-        config.BOARD.CELL = {"WIDTH": cell_width, "HEIGHT": cell_height}
+        config.BOARD.CELL = {
+            "WIDTH": normalize_float(cell_width),
+            "HEIGHT": normalize_float(cell_height),
+        }
 
         # Add other parameters.
         config.POLYOMINO.SPAWN_POSITION = [
@@ -167,12 +238,12 @@ class ConfigManager:
 
         return config
 
-    def _change_data_types(self, config: ConfigModel) -> ConfigModel:
+    def _change_data_types(self, config: ConfigModelRuntime) -> ConfigModelRuntime:
         """
         Replace direction lists with ``Position`` named tuples.
 
         Args:
-            config: Validated model loaded after augmentation.
+            config: Validated model loaded after update.
 
         Returns:
             A copy with updated ``DIRECTIONS`` field types.
@@ -204,34 +275,35 @@ class ConfigManager:
         with open(file_path, "w") as file:
             yaml.dump(config_dict_formatted, file)
 
-    def update_config(self, config: ConfigModel | DotDict) -> ConfigModel:
+    def get_runtime_config(self) -> ConfigModelRuntime:
         """
         Compute board metrics, shapes, write YAML, reload, and fix types.
 
         Args:
-            config: Base validated model from the main config file.
+            config: Base validated model from the main config file.ConfigModelRuntime
 
         Returns:
             Final ``ConfigModel`` ready for the game (with ``Position`` dirs).
         """
+        # Load and validate source configuration file.
+        config_source = self._load_source_config()
+
         # Convert from Pydantic Basemodel to dictionary and then to DotDict
         # instance, to keep using dot notation for dictionary keys and values.
-        config = DotDict(config.model_dump())
+        config_source = DotDict(config_source.model_dump())
 
-        updated_config = self._add_window_resolution(config=config)
-        updated_config = self._add_computational_parameters(config=config)
-        updated_config = self._add_all_polyonomios(config=config)
+        # Add computational parameters.
+        updated_config = self._add_window_resolution(config=config_source)
+        updated_config = self._add_computational_parameters(config=updated_config)
+        updated_config = self._add_all_polyonomios(config=updated_config)
 
-        self._write_config(
-            file_path=MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH, config=updated_config
-        )
+        # Write the updated configurationt to disk.
+        self._write_config(file_path=CONFIG_RUNTIME_FILE_PATH, config=updated_config)
 
-        updated_config = ConfigManager.load_config(
-            file_path=MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH
-        )
+        # Validate updated configuration file. These settings will be used during runtime.
+        config_runtime = self._load_runtime_config()
 
-        assert isinstance(updated_config, ConfigModel)
+        # Change the data types of certain parameters.
+        config_runtime = self._change_data_types(config=config_runtime)
 
-        updated_config = self._change_data_types(config=updated_config)
-
-        return updated_config
+        return config_runtime

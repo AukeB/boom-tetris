@@ -4,9 +4,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, conint
 
-UInt8 = Annotated[
-    int, conint(ge=0, le=255)
-]  # Used for defining colors in RGB notation.
+# Used for defining colors in RGB notation.
+UInt8 = Annotated[int, conint(ge=0, le=255)]
 IntDirection = Literal[-1, 0, 1]
 
 # Used for parameters that will be computed based on other parameters.
@@ -19,7 +18,7 @@ class ConfiguredBaseModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class ConfigModel(ConfiguredBaseModel):
+class ConfigModelSource(ConfiguredBaseModel):
     """Root configuration model for the Tetris game."""
 
     class Window(ConfiguredBaseModel):
@@ -30,8 +29,8 @@ class ConfigModel(ConfiguredBaseModel):
 
             BACKGROUND: list[UInt8]
 
-        WIDTH: int | Computed
-        HEIGHT: int | Computed
+        WIDTH: Computed
+        HEIGHT: Computed
         MARGIN: int
         COLOR: Color
 
@@ -44,15 +43,15 @@ class ConfigModel(ConfiguredBaseModel):
             ROWS: int
             COLS: int
             ROWS_HIDDEN: int
-            ROWS_TOTAL: int | Computed
+            ROWS_TOTAL: Computed
 
         class Rect(ConfiguredBaseModel):
             """Pixel coordinates and size of the board rectangle."""
 
-            LEFT: int | float | Computed
-            TOP: int | float | Computed
-            WIDTH: int | float | Computed
-            HEIGHT: int | float | Computed
+            LEFT: Computed
+            TOP: Computed
+            WIDTH: Computed
+            HEIGHT: Computed
 
         class Color(ConfiguredBaseModel):
             """Board color settings."""
@@ -62,8 +61,8 @@ class ConfigModel(ConfiguredBaseModel):
         class Cell(ConfiguredBaseModel):
             """Pixel dimensions of a single board cell."""
 
-            WIDTH: int | float | Computed
-            HEIGHT: int | float | Computed
+            WIDTH: Computed
+            HEIGHT: Computed
 
         class GridLines(ConfiguredBaseModel):
             """Grid line rendering configuration."""
@@ -83,9 +82,9 @@ class ConfigModel(ConfiguredBaseModel):
 
         SIZE: int
         COLOR: list[UInt8]
-        ALL_SHAPES: list[list[list[int]]] | Computed
-        SPAWN_POSITION: list[int] | Computed
-        SPAWN_POSITION_NEXT: list[int] | Computed
+        ALL_SHAPES: Computed
+        SPAWN_POSITION: Computed
+        SPAWN_POSITION_NEXT: Computed
 
     class Directions(ConfiguredBaseModel):
         """Movement and rotation direction vectors."""

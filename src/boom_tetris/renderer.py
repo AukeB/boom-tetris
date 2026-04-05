@@ -5,10 +5,10 @@ import pygame as pg
 from types import TracebackType
 
 from src.boom_tetris.board import Board
-from src.boom_tetris.config.config_model import ConfigModel
+from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.constants import Position
-from src.boom_tetris.utils.screen_utils import get_window_size_from_screen_resolution
+from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 
 
 class Renderer:
@@ -16,7 +16,7 @@ class Renderer:
 
     def __init__(
         self,
-        config: ConfigModel,
+        config: ConfigModelRuntime,
     ) -> None:
         """Create the window and cache colors and dimensions from config.
 
@@ -101,7 +101,8 @@ class Renderer:
             pg.draw.rect(self.surface, (self.config.POLYOMINO.COLOR), block_rect)
 
     def draw_grid_lines(self, board: Board) -> None:
-        """Draw optional vertical and horizontal grid lines when enabled.
+        """
+        Draw optional vertical and horizontal grid lines when enabled.
 
         Args:
             board: Board providing pixel geometry and visible row range.

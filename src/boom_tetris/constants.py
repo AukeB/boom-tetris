@@ -4,10 +4,8 @@ from collections import namedtuple
 from pathlib import Path
 
 # Main configuration relative file path.
-MAIN_CONFIG_RELATIVE_FILE_PATH = Path("src/boom_tetris/configs/main_config.yaml")
-MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH = Path(
-    "src/boom_tetris/configs/main_config_updated.yaml"
-)
+CONFIG_SOURCE_FILE_PATH = Path("src/boom_tetris/configs/config_source.yaml")
+CONFIG_RUNTIME_FILE_PATH = Path("src/boom_tetris/configs/config_runtime.yaml")
 
 # Polyomino properpties paths.
 TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH = Path(

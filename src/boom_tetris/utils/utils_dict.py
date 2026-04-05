@@ -9,7 +9,8 @@ def format_for_writing_to_yaml_file(
     obj: Union[dict[Any, Any], list[Any], Any],
     path: list[str | int] | None = None,
 ) -> Union[CommentedMap, CommentedSeq, Any]:
-    """Build ruamel structures with optional path-based formatting hints.
+    """
+    Build ruamel structures with optional path-based formatting hints.
 
     Args:
         obj: Plain dict, list, or scalar to wrap for YAML output.
@@ -59,7 +60,8 @@ class DotDict(dict[Any, Any]):
     """``dict`` subclass with attribute access for nested configuration."""
 
     def __init__(self, data: dict[Any, Any] | None = None) -> None:
-        """Populate from a mapping, wrapping nested dicts as ``DotDict``.
+        """
+        Populate from a mapping, wrapping nested dicts as ``DotDict``.
 
         Args:
             data: Source mapping, or empty if ``None``.
@@ -71,7 +73,8 @@ class DotDict(dict[Any, Any]):
             self[key] = self._wrap(value)
 
     def __getattr__(self, attr: str) -> Any:
-        """Return a key as an attribute, mirroring ``dict`` lookup.
+        """
+        Return a key as an attribute, mirroring ``dict`` lookup.
 
         Args:
             attr: Key name.
@@ -88,7 +91,8 @@ class DotDict(dict[Any, Any]):
             raise AttributeError(f"'DotDict' object has no attribute '{attr}'") from e
 
     def __setattr__(self, key: str, value: Any) -> None:
-        """Store a value under ``key``, wrapping dicts as ``DotDict``.
+        """
+        Store a value under ``key``, wrapping dicts as ``DotDict``.
 
         Args:
             key: Attribute and dict key name.
@@ -97,7 +101,8 @@ class DotDict(dict[Any, Any]):
         self[key] = self._wrap(value)
 
     def __delattr__(self, key: str) -> None:
-        """Delete a key by attribute syntax.
+        """
+        Delete a key by attribute syntax.
 
         Args:
             key: Key to remove.
@@ -111,7 +116,8 @@ class DotDict(dict[Any, Any]):
             raise AttributeError(f"'DotDict' object has no attribute '{key}'") from e
 
     def _wrap(self, value: Any) -> Any:
-        """Recursively wrap dicts as ``DotDict`` and lists element-wise.
+        """
+        Recursively wrap dicts as ``DotDict`` and lists element-wise.
 
         Args:
             value: Arbitrary nested structure.
@@ -127,7 +133,8 @@ class DotDict(dict[Any, Any]):
         return value
 
     def to_dict(self) -> dict[Any, Any]:
-        """Convert this tree to plain dicts and lists (no ``DotDict`` nodes).
+        """
+        Convert this tree to plain dicts and lists (no ``DotDict`` nodes).
 
         Returns:
             A JSON-serializable plain ``dict`` representation.

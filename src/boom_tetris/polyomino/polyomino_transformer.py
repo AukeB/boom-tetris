@@ -5,18 +5,17 @@ Sort, rotate, mirror, and shift blocks using optional JSON metadata.
 
 import json
 
-from src.boom_tetris.config.config_model import ConfigModel
 from src.boom_tetris.constants import (
     TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH,
     TETROMINO_PROPERTIES_RELATIVE_FILE_PATH,
 )
-from src.boom_tetris.utils.dict_utils import DotDict
+from src.boom_tetris.utils.utils_dict import DotDict
 
 
 class PolyominoTransformer:
     """Apply JSON-defined corrections to shapes for tetromino-sized games."""
 
-    def __init__(self, config: ConfigModel) -> None:
+    def __init__(self, config: DotDict) -> None:
         """Load shapes from config and optional tetromino property metadata.
 
         Args:

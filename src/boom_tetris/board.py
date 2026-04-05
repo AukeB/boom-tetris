@@ -5,7 +5,7 @@ from collections.abc import Iterator
 
 import pygame as pg
 
-from src.boom_tetris.config.config_model import ConfigModel
+from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
 from src.boom_tetris.constants import Dimensions, Position
 from src.boom_tetris.polyomino.polyomino import Polyomino
 
@@ -15,9 +15,10 @@ class Board:
 
     def __init__(
         self,
-        config: ConfigModel,
+        config: ConfigModelRuntime,
     ) -> None:
-        """Build dimensions, pygame rects, and an empty cell grid from config.
+        """
+        Build dimensions, pygame rects, and an empty cell grid from config.
 
         Args:
             config: Augmented model with board geometry and colors.

@@ -1,22 +1,19 @@
-"""Entry point: load config, augment it, then run the game loop."""
+"""Entry point: load config, update it, then run the game loop."""
 
 from src.boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.constants import MAIN_CONFIG_RELATIVE_FILE_PATH
 
 
 def main() -> None:
-    """Load config, augment it, and run the loop until the user quits."""
-    config_main = ConfigManager.load_config(file_path=MAIN_CONFIG_RELATIVE_FILE_PATH)
+    """Load config, update it, and run the loop until the user quits."""
+    config_manager = ConfigManager()
+    config_runtime = config_manager.get_runtime_config()
 
-    config_instance = ConfigManager(config_path=MAIN_CONFIG_RELATIVE_FILE_PATH)
-    config_updated = config_instance.update_config(config=config_main)
-
-    # The 'Game' class can only be imported after the `update_config` from
-    # the 'Config' class has been executed, because it generates a .yaml
+    # The 'Game' class can only be imported after the `get_runtime_config` method
+    # from the 'Config' class has been executed, because it generates a .yaml
     # file that is immediatly loaded.
     from src.boom_tetris.game import Game
 
-    game = Game(config=config_updated)
+    game = Game(config=config_runtime)
 
     while game.update():
         pass
@@ -52,10 +49,10 @@ Todo:
 
 
     
-- MyPy toevoegen
-    - Template repo updaten
-- Blok met tijd om laag laten vallen
-- DAS implementeren
+- MyPy toevoegen                                                            DONE
+- Template repo updaten                                                     DONE
+- Blok met tijd om laag laten vallen                                        DONE
+- DAS implementeren                                                         DONE
 
 Backlog:
 

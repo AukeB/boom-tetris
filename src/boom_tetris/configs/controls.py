@@ -2,7 +2,7 @@
 
 import pygame as pg
 
-from src.boom_tetris.utils.dict_utils import DotDict
+from src.boom_tetris.utils.utils_dict import DotDict
 
 # For singleplayer mode, use the WASD keys for movement and the arrow keys for
 # rotations. Use the spacebar for harddrops.

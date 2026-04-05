@@ -6,8 +6,8 @@ import pygame as pg
 from src.boom_tetris.board import Board
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.renderer import Renderer
-from src.boom_tetris.config.config_model import ConfigModel
-from src.boom_tetris.utils.game_utils import (
+from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from src.boom_tetris.utils.utils_game import (
     convert_drop_frames_to_time,
     compute_first_level_advancement,
     get_frames_per_cell,
@@ -20,11 +20,11 @@ from src.boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
 class Game:
     """Single-player session: pieces, timers, DAS, score, and pygame loop."""
 
-    def __init__(self, config: ConfigModel) -> None:
+    def __init__(self, config: ConfigModelRuntime) -> None:
         """Wire renderer, board, pieces, and timing state from ``config``.
 
         Args:
-            config: Fully updated ``ConfigModel`` (after YAML augmentation).
+            config: Fully updated ``ConfigModel`` (after YAML update).
         """
         # General
         self.config = config
