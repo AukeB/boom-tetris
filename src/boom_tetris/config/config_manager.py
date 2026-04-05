@@ -13,7 +13,7 @@ yaml = YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
 
 
-class Config:
+class ConfigManager:
     """High-level configuration I/O and augmentation pipeline."""
 
     def __init__(self, config_path: Path) -> None:
@@ -209,7 +209,7 @@ class Config:
             file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH, config=augmented_config
         )
 
-        augmented_config = Config.load_config(
+        augmented_config = ConfigManager.load_config(
             file_path=MAIN_CONFIG_AUGMENTED_RELATIVE_FILE_PATH
         )
         assert isinstance(augmented_config, ConfigModel)
