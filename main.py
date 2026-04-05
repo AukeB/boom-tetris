@@ -9,9 +9,9 @@ def main() -> None:
     config_main = ConfigManager.load_config(file_path=MAIN_CONFIG_RELATIVE_FILE_PATH)
 
     config_instance = ConfigManager(config_path=MAIN_CONFIG_RELATIVE_FILE_PATH)
-    config_updated = config_instance.augment_config(config=config_main)
+    config_updated = config_instance.update_config(config=config_main)
 
-    # The 'Game' class can only be imported after the `augment_config` from
+    # The 'Game' class can only be imported after the `update_config` from
     # the 'Config' class has been executed, because it generates a .yaml
     # file that is immediatly loaded.
     from src.boom_tetris.game import Game

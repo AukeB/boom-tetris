@@ -17,32 +17,45 @@ class ConfigManager:
     """High-level configuration I/O and augmentation pipeline."""
 
     def __init__(self, config_path: Path) -> None:
+        """
+        Initialisation of the `ConfigManager` class.
+
+        Args:
+            config_path (Path): Path to the configuration file.
+        """
         self.config_path = config_path
 
     @staticmethod
     def load_config(
-        file_path: Path, validate: bool = True, file_type: str = "yaml"
+        file_path: Path, validate: bool = True, file_type: str = ".yaml"
     ) -> ConfigModel | DotDict:
-        """Load a configuration file from disk.
+        """
+        Load a configuration file from disk.
+
+        1. Validate that the file type is supported.
+        2. Load the file contents using ruamel.yaml.
+        3. Return a validated ConfigModel or a DotDict depending on the validate flag.
 
         Args:
-            file_path: Path to the YAML file.
-            validate: If True, return a ``ConfigModel``; else a ``DotDict``.
-            file_type: Format identifier; only ``yaml`` is implemented.
+            file_path (Path): Path to the YAML file.
+            validate (bool): If True, return a ``ConfigModel``; else a ``DotDict``.
+            file_type (str): Format identifier; only ``.yaml`` is implemented.
 
         Returns:
             Parsed configuration as ``ConfigModel`` or ``DotDict``.
         """
-        if file_type == "yaml":
-            with open(file_path) as file:
-                config = yaml.load(file)
+        if file_type != ".yaml":
+            raise ValueError(
+                f"Unsupported file type '{file_type}'. Only '.yaml' is supported."
+            )
 
-            if validate:
-                config = ConfigModel(**config)
-            else:
-                config = DotDict(config)
+        with open(file_path) as file:
+            config = yaml.load(file)
 
-        return config
+        if validate:
+            return ConfigModel(**config)
+
+        return DotDict(config)
 
     def _add_window_resolution(self, config: DotDict) -> DotDict:
         """
@@ -126,7 +139,8 @@ class ConfigManager:
         return config
 
     def _add_all_polyonomios(self, config: DotDict) -> DotDict:
-        """Generate all free polyomino shapes and attach ``ALL_SHAPES``.
+        """
+        Generate all free polyomino shapes and attach ``ALL_SHAPES``.
 
         Args:
             config: Mutable dot-config with ``POLYOMINO.SIZE`` and directions.
@@ -154,7 +168,8 @@ class ConfigManager:
         return config
 
     def _change_data_types(self, config: ConfigModel) -> ConfigModel:
-        """Replace direction lists with ``Position`` named tuples.
+        """
+        Replace direction lists with ``Position`` named tuples.
 
         Args:
             config: Validated model loaded after augmentation.
@@ -176,7 +191,8 @@ class ConfigManager:
         return config
 
     def _write_config(self, file_path: Path, config: DotDict) -> None:
-        """Serialize dot-config to YAML with ruamel formatting.
+        """
+        Serialize dot-config to YAML with ruamel formatting.
 
         Args:
             file_path: Output path for the YAML file.
@@ -188,8 +204,9 @@ class ConfigManager:
         with open(file_path, "w") as file:
             yaml.dump(config_dict_formatted, file)
 
-    def augment_config(self, config: ConfigModel | DotDict) -> ConfigModel:
-        """Compute board metrics, shapes, write YAML, reload, and fix types.
+    def update_config(self, config: ConfigModel | DotDict) -> ConfigModel:
+        """
+        Compute board metrics, shapes, write YAML, reload, and fix types.
 
         Args:
             config: Base validated model from the main config file.
@@ -212,6 +229,7 @@ class ConfigManager:
         updated_config = ConfigManager.load_config(
             file_path=MAIN_CONFIG_UPDATED_RELATIVE_FILE_PATH
         )
+
         assert isinstance(updated_config, ConfigModel)
 
         updated_config = self._change_data_types(config=updated_config)

@@ -4,12 +4,18 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, conint
 
-UInt8 = Annotated[int, conint(ge=0, le=255)]
+UInt8 = Annotated[
+    int, conint(ge=0, le=255)
+]  # Used for defining colors in RGB notation.
 IntDirection = Literal[-1, 0, 1]
+
+# Used for parameters that will be computed based on other parameters.
 Computed = Literal["COMPUTED"]
 
 
 class ConfiguredBaseModel(BaseModel):
+    """Config model that forbids extra parameter"""
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -38,15 +44,15 @@ class ConfigModel(ConfiguredBaseModel):
             ROWS: int
             COLS: int
             ROWS_HIDDEN: int
-            ROWS_TOTAL: int | Computed | None = None
+            ROWS_TOTAL: int | Computed
 
         class Rect(ConfiguredBaseModel):
             """Pixel coordinates and size of the board rectangle."""
 
-            LEFT: int | float | Computed | None = None
-            TOP: int | float | Computed | None = None
-            WIDTH: int | float | Computed | None = None
-            HEIGHT: int | float | Computed | None = None
+            LEFT: int | float | Computed
+            TOP: int | float | Computed
+            WIDTH: int | float | Computed
+            HEIGHT: int | float | Computed
 
         class Color(ConfiguredBaseModel):
             """Board color settings."""
@@ -67,9 +73,9 @@ class ConfigModel(ConfiguredBaseModel):
             LINE_WIDTH: int
 
         DIMENSIONS: Dimensions
-        RECT: Rect | None = None
+        RECT: Rect
         COLOR: Color
-        CELL: Cell | None = None
+        CELL: Cell
         GRID_LINES: GridLines
 
     class Polyomino(ConfiguredBaseModel):
@@ -77,9 +83,9 @@ class ConfigModel(ConfiguredBaseModel):
 
         SIZE: int
         COLOR: list[UInt8]
-        ALL_SHAPES: list[list[list[int]]] | Computed | None = None
-        SPAWN_POSITION: list[int] | Computed | None = None
-        SPAWN_POSITION_NEXT: list[int] | Computed | None = None
+        ALL_SHAPES: list[list[list[int]]] | Computed
+        SPAWN_POSITION: list[int] | Computed
+        SPAWN_POSITION_NEXT: list[int] | Computed
 
     class Directions(ConfiguredBaseModel):
         """Movement and rotation direction vectors."""
