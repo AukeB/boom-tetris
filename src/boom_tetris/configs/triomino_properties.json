@@ -1,0 +1,22 @@
+{
+    "[[0, 0], [0, 1], [0, 2]]": {
+        "name": "longbar",
+        "rotation_type": "predefined",
+        "rotations": [
+            [[-1, 0], [0, 0], [1, 0]],
+            [[0, -1], [0, 0], [0, 1]]
+        ],
+        "position_correction": [10, -2]
+    },
+    "[[0, 0], [1, 0], [1, 1]]": {
+        "name": "l_piece",
+        "rotation_type": "predefined",
+        "rotations": [
+            [[0, 0], [1, 0], [1, 1]],
+            [[0, 1], [1, 0], [1, 1]],
+            [[0, 0], [0, 1], [1, 1]],
+            [[0, 0], [0, 1], [1, 0]]
+        ],
+        "rotation_correction": 1
+    }
+}

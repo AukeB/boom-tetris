@@ -7,8 +7,8 @@ WINDOW:
 
 BOARD:
   DIMENSIONS:
-    ROWS: 40
-    COLS: 20
+    ROWS: 20
+    COLS: 10
     ROWS_HIDDEN: 2
     ROWS_TOTAL: COMPUTED
   RECT:
@@ -27,7 +27,7 @@ BOARD:
     LINE_WIDTH: 1
 
 POLYOMINO:
-  SIZE: 4
+  SIZE: 3
   COLOR: [200, 255, 200]
   ALL_SHAPES: COMPUTED
   SPAWN_POSITION: COMPUTED
@@ -57,13 +57,13 @@ SCORE:
   HARD_DROP_PER_LINE: 1
 
 GENERAL:
-  START_LEVEL: 18
+  START_LEVEL: 0
   SOFT_DROP_SPEED: 0.5 # Units: Gravity. Definition of gravity: Gravity is expressed in unit G, where 1G = 1 cell per frame, and 0.1G = 1 cell per 10 frames
   ARE_DELAY: 18
   NTSC_FRAMERATE: 60.0988
   PAL_FRAMERATE: 50.0070
   NTSC_DROP_FRAMES:
-    0: 48
+    0: 480
     1: 43
     2: 38
     3: 33

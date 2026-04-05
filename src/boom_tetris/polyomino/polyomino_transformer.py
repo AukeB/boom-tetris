@@ -6,7 +6,10 @@ Sort, rotate, mirror, and shift blocks using optional JSON metadata.
 import json
 
 from src.boom_tetris.config.model import ConfigModel
-from src.boom_tetris.constants import TETROMINO_PROPERTIES_RELATIVE_FILE_PATH
+from src.boom_tetris.constants import (
+    TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH,
+    TETROMINO_PROPERTIES_RELATIVE_FILE_PATH,
+)
 from src.boom_tetris.utils.dict_utils import DotDict
 
 
@@ -39,25 +42,25 @@ class PolyominoTransformer:
             Mapping from canonical cell-tuple keys to property ``DotDict``s.
         """
         if self.polyomino_size == 3:
-            return {}
+            with open(TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH, "r") as file:
+                polyomino_mapping = json.load(file)
         if self.polyomino_size == 4:
             with open(TETROMINO_PROPERTIES_RELATIVE_FILE_PATH, "r") as file:
                 polyomino_mapping = json.load(file)
 
-            # Because the coordinate representation of the polyomino is used in
-            # str format as key of the dictionary, we need to convert it to a tuple.
-            polyomino_mapping = {
-                tuple(map(tuple, json.loads(k))): v
-                for k, v in polyomino_mapping.items()
-            }
+        # Because the coordinate representation of the polyomino is used in
+        # str format as key of the dictionary, we need to convert it to a tuple.
+        polyomino_mapping = {
+            tuple(map(tuple, json.loads(k))): v for k, v in polyomino_mapping.items()
+        }
 
-            # Because the dictionary keys are tuples, apply the DotDict one level deeper.
-            for polyomino_index in polyomino_mapping:
-                polyomino_mapping[polyomino_index] = DotDict(
-                    polyomino_mapping[polyomino_index]
-                )
+        # Because the dictionary keys are tuples, apply the DotDict one level deeper.
+        for polyomino_index in polyomino_mapping:
+            polyomino_mapping[polyomino_index] = DotDict(
+                polyomino_mapping[polyomino_index]
+            )
 
-            return polyomino_mapping
+        return polyomino_mapping
 
         return {}
 
@@ -174,7 +177,7 @@ class PolyominoTransformer:
             For size 4, ``(polyominos, mapping)``; otherwise ``polyominos``
             alone.
         """
-        if self.polyomino_size == 4:
+        if self.polyomino_size in [3, 4]:
             self._rotate()
             self._shift()
             self._mirror_horizontally()
