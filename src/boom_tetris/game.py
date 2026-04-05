@@ -1,4 +1,4 @@
-""" " """
+"""Core game loop: input, gravity, DAS, scoring, and rendering."""
 
 import os
 import pygame as pg
@@ -18,10 +18,14 @@ from src.boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
 
 
 class Game:
-    """ """
+    """Single-player session: pieces, timers, DAS, score, and pygame loop."""
 
     def __init__(self, config: ConfigModel) -> None:
-        """ """
+        """Wire renderer, board, pieces, and timing state from ``config``.
+
+        Args:
+            config: Fully augmented ``ConfigModel`` (after YAML augmentation).
+        """
         # General
         self.config = config
 
@@ -94,7 +98,11 @@ class Game:
         )
 
     def initialize_scoring_dictionary(self) -> dict[int, int]:
-        """ """
+        """Build line-clear score multipliers for 1–4 rows at once.
+
+        Returns:
+            Map from cleared line count to base points before level scaling.
+        """
         single_points = self.config.SCORE.SINGLE
         double_points = single_points * self.config.SCORE.DOUBLE_MULTIPLIER
         triple_points = double_points * self.config.SCORE.TRIPLE_MULTIPLIER
@@ -110,12 +118,21 @@ class Game:
         return score_dict
 
     def update_key_hold(self, direction: str, is_pressed: bool) -> None:
-        """ """
+        """Track key state for DAS and reset the hold timer on change.
+
+        Args:
+            direction: One of the configured DAS direction names.
+            is_pressed: True on key down, False on key up.
+        """
         self.key_pressed[direction] = is_pressed
         self.hold_timer[direction] = 0
 
     def update_das(self, dt: int) -> None:
-        """ """
+        """Advance delayed auto-shift timers and repeat moves when eligible.
+
+        Args:
+            dt: Milliseconds since the last tick for timer accumulation.
+        """
         for direction in self.das_directions:
             if self.key_pressed[direction]:
                 self.hold_timer[direction] += dt
@@ -141,7 +158,11 @@ class Game:
                 self.hold_timer[direction] = 0
 
     def handle_controls(self, event: pg.event.Event) -> None:
-        """ """
+        """React to one pygame input event (move, rotate, hard drop).
+
+        Args:
+            event: A keyboard or other pygame event from the queue.
+        """
         if event.type == pg.KEYDOWN:
             # Horizontal and vertical movement.
             if event.key == KEY.LEFT:
@@ -197,7 +218,11 @@ class Game:
                 self.update_key_hold("DOWN", is_pressed=False)
 
     def handle_events(self) -> bool:
-        """ """
+        """Drain the event queue; return False when the user quits.
+
+        Returns:
+            False if the window should close; True to keep running.
+        """
         for event in pg.event.get():
             if (
                 event.type == pg.QUIT
@@ -211,7 +236,11 @@ class Game:
         return True
 
     def update_lines_and_level(self, lines_cleared: int) -> None:
-        """ """
+        """Update total lines and level using NTSC-style advancement rules.
+
+        Args:
+            lines_cleared: Rows removed in the most recent lock step.
+        """
         if not self.leveled_up:
             if (
                 self.line_counter + lines_cleared
@@ -226,12 +255,17 @@ class Game:
         self.line_counter += lines_cleared
 
     def update_score(self, level: int, lines_cleared: int) -> None:
-        """ """
+        """Add points for a line clear scaled by current level.
+
+        Args:
+            level: Level index before applying the score increment.
+            lines_cleared: Number of simultaneous rows cleared (1–4).
+        """
         score_to_add = (level + 1) * self.score_dict[lines_cleared]
         self.score += score_to_add
 
     def get_next_polyomino(self) -> None:
-        """ """
+        """Lock the piece, clear lines, update score/level, and swap pieces."""
         # Place the polyomino on the board.
         self.board.place(self.polyomino)
 
@@ -266,7 +300,7 @@ class Game:
         )
 
     def handle_timers(self) -> None:
-        """ """
+        """Move the piece down on each drop tick unless soft-dropping."""
         current_time = pg.time.get_ticks()
 
         if not self.key_pressed["DOWN"]:
@@ -280,7 +314,11 @@ class Game:
                 self.last_drop_time = current_time
 
     def update(self) -> bool:
-        """ """
+        """Render one frame, run timers and DAS, then process pygame events.
+
+        Returns:
+            False when ``handle_events`` reports quit; True otherwise.
+        """
         with self.renderer:
             self.renderer.draw_board(board=self.board)
             self.renderer.draw_polyomino(self.polyomino, self.board.cell_rect.copy())

@@ -1,4 +1,4 @@
-""" """
+"""Keyboard bindings for single-player controls (pygame key constants)."""
 
 import pygame as pg
 

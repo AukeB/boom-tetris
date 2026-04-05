@@ -1,4 +1,4 @@
-""" """
+"""Load YAML config, augment with computed fields, and write derived files."""
 
 from ruamel.yaml import YAML
 
@@ -12,7 +12,7 @@ yaml.indent(mapping=2, sequence=4, offset=2)
 
 
 class Config:
-    """ """
+    """High-level configuration I/O and augmentation pipeline."""
 
     def __init__(self, config_path: str) -> None:
         self.config_path = config_path
@@ -21,7 +21,16 @@ class Config:
     def load_config(
         file_path: str, validate: bool = True, file_type: str = "yaml"
     ) -> ConfigModel | DotDict:
-        """ """
+        """Load a configuration file from disk.
+
+        Args:
+            file_path: Path to the YAML file.
+            validate: If True, return a ``ConfigModel``; else a ``DotDict``.
+            file_type: Format identifier; only ``yaml`` is implemented.
+
+        Returns:
+            Parsed configuration as ``ConfigModel`` or ``DotDict``.
+        """
         if file_type == "yaml":
             with open(file_path) as file:
                 config = yaml.load(file)
@@ -95,7 +104,14 @@ class Config:
         return config
 
     def _add_all_polyonomios(self, config: DotDict) -> DotDict:
-        """ """
+        """Generate all free polyomino shapes and attach ``ALL_SHAPES``.
+
+        Args:
+            config: Mutable dot-config with ``POLYOMINO.SIZE`` and directions.
+
+        Returns:
+            Same ``config`` with ``POLYOMINO.ALL_SHAPES`` populated.
+        """
         # Exclude `rotations` from `directions`.
         directions = {
             key: value
@@ -116,7 +132,14 @@ class Config:
         return config
 
     def _change_data_types(self, config: ConfigModel) -> ConfigModel:
-        """ """
+        """Replace direction lists with ``Position`` named tuples.
+
+        Args:
+            config: Validated model loaded after augmentation.
+
+        Returns:
+            A copy with updated ``DIRECTIONS`` field types.
+        """
         new_directions = config.DIRECTIONS.model_copy(
             update={
                 "UP": Position(*config.DIRECTIONS.UP),
@@ -131,7 +154,12 @@ class Config:
         return config
 
     def _write_config(self, file_path: str, config: DotDict) -> None:
-        """ """
+        """Serialize dot-config to YAML with ruamel formatting.
+
+        Args:
+            file_path: Output path for the YAML file.
+            config: Dot-access configuration to dump.
+        """
         config_dict = config.to_dict()
         config_dict_formatted = format_for_writing_to_yaml_file(obj=config_dict)
 
@@ -139,7 +167,14 @@ class Config:
             yaml.dump(config_dict_formatted, file)
 
     def augment_config(self, config: ConfigModel) -> ConfigModel:
-        """ """
+        """Compute board metrics, shapes, write YAML, reload, and fix types.
+
+        Args:
+            config: Base validated model from the main config file.
+
+        Returns:
+            Final ``ConfigModel`` ready for the game (with ``Position`` dirs).
+        """
         # Convert from Pydantic Basemodel to dictionary and then to DotDict
         # instance, to keep using dot notation for dictionary keys and values.
         config = DotDict(config.model_dump())

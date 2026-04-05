@@ -1,4 +1,4 @@
-""" """
+"""Shared paths and simple record types used across the game."""
 
 from collections import namedtuple
 from pathlib import Path

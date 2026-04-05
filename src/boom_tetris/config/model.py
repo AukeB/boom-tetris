@@ -1,4 +1,4 @@
-""" """
+"""Pydantic models for validating and typing game YAML configuration."""
 
 from pydantic import BaseModel, ConfigDict, conint
 from typing import Annotated, Literal

@@ -1,4 +1,4 @@
-""" """
+"""Playfield grid: collision tests, locking pieces, and line clears."""
 
 import itertools
 from collections.abc import Iterator
@@ -11,13 +11,17 @@ from src.boom_tetris.polyomino.polyomino import Polyomino
 
 
 class Board:
-    """ """
+    """Rectangular cell matrix with hidden rows above the visible field."""
 
     def __init__(
         self,
         config: ConfigModel,
     ) -> None:
-        """ """
+        """Build dimensions, pygame rects, and an empty cell grid from config.
+
+        Args:
+            config: Augmented model with board geometry and colors.
+        """
         self.config = config
 
         self.dimensions = Dimensions(
@@ -62,7 +66,16 @@ class Board:
         move_direction: Position = Position(0, 0),
         rotate_direction: int = 0,
     ) -> bool:
-        """ """
+        """Return True if the piece would overlap walls, floor, or blocks.
+
+        Args:
+            polyomino: Active piece with integer grid position.
+            move_direction: Delta ``(dx, dy)`` applied before testing.
+            rotate_direction: Rotation index or delta passed to the piece.
+
+        Returns:
+            True if any occupied cell would be illegal after the move.
+        """
         for block in polyomino.get_rotation(rotate_direction):
             boundary_position = Position(
                 x=polyomino.x + block[0] + move_direction[0],
@@ -85,12 +98,20 @@ class Board:
         return False
 
     def place(self, polyominal: Polyomino) -> None:
-        """ """
+        """Write the piece's blocks into the cell grid as occupied.
+
+        Args:
+            polyominal: Locked piece (name kept for call-site compatibility).
+        """
         for block in polyominal:
             self.cells[polyominal.y + block[1]][polyominal.x + block[0]] = 1
 
     def clear_lines(self) -> int:
-        """ """
+        """Remove full rows, shift cells down, and count cleared lines.
+
+        Returns:
+            Number of rows removed this call.
+        """
         lines_cleared = 0
 
         for row in self.cells[:]:
@@ -102,7 +123,11 @@ class Board:
         return lines_cleared
 
     def __iter__(self) -> Iterator[tuple[int, int]]:
-        """ """
+        """Yield ``(row, col)`` indices for every cell in row-major order.
+
+        Yields:
+            Row and column indices from ``(0,0)`` through the board extent.
+        """
         return itertools.product(
             range(self.dimensions.rows), range(self.dimensions.cols)
         )

@@ -1,4 +1,7 @@
-""" """
+"""Post-process polyomino coordinates after generation.
+
+Sort, rotate, mirror, and shift blocks using optional JSON metadata.
+"""
 
 import json
 
@@ -8,10 +11,14 @@ from src.boom_tetris.utils.dict_utils import DotDict
 
 
 class PolyominoTransformer:
-    """ """
+    """Apply JSON-defined corrections to shapes for tetromino-sized games."""
 
     def __init__(self, config: ConfigModel) -> None:
-        """ """
+        """Load shapes from config and optional tetromino property metadata.
+
+        Args:
+            config: Augmented game configuration including ``ALL_SHAPES``.
+        """
         self.polyominos: list[list[list[int]]] = (
             config.POLYOMINO.ALL_SHAPES
             if config.POLYOMINO.ALL_SHAPES is not None
@@ -26,7 +33,11 @@ class PolyominoTransformer:
     def _load_polyomino_properties(
         self,
     ) -> dict[tuple[tuple[int, int], ...], DotDict]:
-        """ """
+        """Load per-shape metadata for size 4; otherwise return an empty map.
+
+        Returns:
+            Mapping from canonical cell-tuple keys to property ``DotDict``s.
+        """
         if self.polyomino_size == 3:
             return {}
         if self.polyomino_size == 4:
@@ -51,7 +62,7 @@ class PolyominoTransformer:
         return {}
 
     def _sort(self) -> None:
-        """ """
+        """Sort block lists and reorder the property map to match."""
         # Sort the polyominos.
         self.polyominos = list(
             sorted(sorted(polyomino) for polyomino in self.polyominos)
@@ -67,7 +78,7 @@ class PolyominoTransformer:
         self.polyomino_mapping = dict(sorted(sorted_polyomino_mapping.items()))
 
     def _rotate(self) -> None:
-        """ """
+        """Apply JSON ``rotation_correction`` to shapes, then re-sort."""
         updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
         for i, (polyomino, (_, polyomino_properties)) in enumerate(
@@ -99,7 +110,7 @@ class PolyominoTransformer:
         self._sort()
 
     def _shift(self) -> None:
-        """ """
+        """Apply JSON ``position_correction`` offsets, then re-sort."""
         updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
         for i, (polyomino, (_, polyomino_properties)) in enumerate(
@@ -157,7 +168,12 @@ class PolyominoTransformer:
         tuple[list[list[list[int]]], dict[tuple[tuple[int, int], ...], DotDict]]
         | list[list[list[int]]]
     ):
-        """ """
+        """Run the full transform pipeline for tetrominoes; else return shapes.
+
+        Returns:
+            For size 4, ``(polyominos, mapping)``; otherwise ``polyominos``
+            alone.
+        """
         if self.polyomino_size == 4:
             self._rotate()
             self._shift()

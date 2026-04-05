@@ -1,4 +1,4 @@
-""" """
+"""Falling polyomino state: random shape, rotations, and block iteration."""
 
 import random as rd
 
@@ -15,10 +15,15 @@ ALL_POLYOMINOS, POLYOMINO_MAPPING = polyomino_transformer.execute()
 
 
 class Polyomino:
-    """ """
+    """One active piece with grid position, blocks, and rotation metadata."""
 
     def __init__(self, x: int, y: int) -> None:
-        """ """
+        """Pick a random shape from module-level ``ALL_POLYOMINOS``.
+
+        Args:
+            x: Initial column in board cells.
+            y: Initial row in board cells.
+        """
         self.x = x
         self.y = y
 
@@ -36,7 +41,11 @@ class Polyomino:
             self.blocks = self.rotations[self.rotation_index]
 
     def rotate(self, direction: int) -> None:
-        """ """
+        """Advance rotation for predefined types or recompute block coordinates.
+
+        Args:
+            direction: Clockwise/counter-clockwise sign from configuration.
+        """
         if self.rotation_type == "predefined":
             self.rotation_index = (self.rotation_index + direction) % len(
                 self.rotations
@@ -46,7 +55,14 @@ class Polyomino:
             self.blocks = self.get_rotation(direction=direction)
 
     def get_rotation(self, direction: int) -> list[tuple]:
-        """ """
+        """Return blocks for a rotation without mutating ``rotation_index``.
+
+        Args:
+            direction: Rotation delta; ``0`` means no change.
+
+        Returns:
+            List of ``(x, y)`` block offsets for that orientation.
+        """
         if direction == 0:
             return self.blocks
 
@@ -62,5 +78,9 @@ class Polyomino:
         return [(-y * direction, x * direction) for (x, y) in self.blocks]
 
     def __iter__(self) -> None:
-        """ """
+        """Iterate over the current block offset list.
+
+        Yields:
+            Each ``(dx, dy)`` cell relative to the piece origin.
+        """
         return iter(self.blocks)

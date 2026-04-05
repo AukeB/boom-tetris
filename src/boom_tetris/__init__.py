@@ -1,1 +1,1 @@
-""" """
+"""Boom Tetris game package."""
