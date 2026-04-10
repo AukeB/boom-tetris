@@ -1,13 +1,13 @@
 """Pygame drawing helpers for the window, board, pieces, and overlays."""
 
-import pygame as pg
-
 from types import TracebackType
+
+import pygame as pg
 
 from src.boom_tetris.board import Board
 from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.constants import Position
+from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 
 
@@ -18,7 +18,8 @@ class Renderer:
         self,
         config: ConfigModelRuntime,
     ) -> None:
-        """Create the window and cache colors and dimensions from config.
+        """
+        Create the window and cache colors and dimensions from config.
 
         Args:
             config: Augmented model with window and board layout.
@@ -135,7 +136,8 @@ class Renderer:
                 )
 
     def draw_block_hidden_rows(self, board: Board) -> None:
-        """Cover the spawn (hidden) region with the window background color.
+        """
+        Cover the spawn (hidden) region with the window background color.
 
         Args:
             board: Board exposing the hidden-rows rectangle in screen space.

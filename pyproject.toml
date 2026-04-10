@@ -16,6 +16,11 @@ dev = [
     "ty>=0.0.29",
 ]
 
-[[tool.mypy.overrides]]
-module = ["yaml.*"]
-follow_untyped_imports = true
+[tool.ruff.lint]
+select = [
+    "I",    # isort-style import sorting
+    #"ANN",  # annotation rules
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]

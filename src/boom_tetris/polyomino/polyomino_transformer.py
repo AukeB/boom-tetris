@@ -6,8 +6,8 @@ Sort, rotate, mirror, and shift blocks using optional JSON metadata.
 import json
 
 from src.boom_tetris.constants import (
-    TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH,
     TETROMINO_PROPERTIES_RELATIVE_FILE_PATH,
+    TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH,
 )
 from src.boom_tetris.utils.utils_dict import DotDict
 
