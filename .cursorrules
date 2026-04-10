@@ -1,46 +1,46 @@
-Python coding style preferences
+## Python coding style preferences
 
-Module structure & imports
+### Module structure & imports
 
 Every file starts with a one-liner """Module for ...""" docstring.
 Import order: standard library → third-party → internal (src.*), each group separated by a blank line. No wildcard imports. typing imports go in the stdlib block.
 Commonly used packages are imported under standard aliases: pygame → pg, pandas → pd, numpy → np, random → rd. Use the alias consistently throughout the file — never mix pygame.X and pg.X.
 In entry-point functions like main(), all imports live inside the function body, not at the module top level.
 
-Class design
+### Class design
 
 Config models use Pydantic, subclassing a shared ConfiguredBaseModel with extra="forbid". Never plain dicts or dataclasses for structured config.
 Related config fields are grouped into nested inner classes inside the root model, each also extending ConfiguredBaseModel.
 Classes that handle loading/saving are separate from classes that use the data.
 __init__ unpacks config into named instance attributes, grouped with short # Category section comments. Only frequently-used values get flattened; everything else stays on self.config.
 
-Docstrings & comments
+### Docstrings & comments
 
-Methods get an intent paragraph starting on the line immediately after the opening """, then a numbered list of steps, then Args and Returns blocks. Only include an Args block if the method has parameters beyond self; only include a Returns block if the method returns a value (i.e. not -> None).
+Methods get an intent paragraph starting on the line immediately after the opening """, then a numbered list of steps, then Args, Returns and Raises blocks. Only include an Args block if the method has parameters beyond self; only include a Returns block if the method returns a value (i.e. not -> None). Only add a Raises block if the function raises any errors.
 Long methods use short # Category comments as visual section separators, not inline end-of-line comments.
 Non-obvious boolean/flag attributes get a docstring directly below them (PEP 257 style), not an inline # comment.
 Genuine TODO/refactor notes stay visible in the code with a brief explanation.
 
-Naming conventions
+### Naming conventions
 
 snake_case for everything except classes (PascalCase). No camelCase.
 All internal methods use a single leading underscore. Public API surface is narrow and intentional.
 Descriptive, self-documenting names. No single-letter variables except loop indices.
 
-Type annotations
+### Type annotations
 
 Every method has full parameter and return type annotations. -> None is always written explicitly.
 Annotate local variables only when the type is non-obvious or deviates from what a reader would expect, or when a variable is declared before assignment.
 Use Literal for fields that only accept specific values.
 
-Functions & logic
+### Functions & logic
 
 Pipelines are split across dedicated methods with a clear phase separation (e.g. measure → align → position → draw). Orchestration lives in a higher-level method.
 Tree/recursive operations use recursion over iteration, with an explicit early-return base case.
 Guard clauses over deep nesting — return early when pre-conditions aren't met.
 namedtuple for simple value objects. Plain dict for internal data structures like tree nodes.
 
-Formatting & tooling
+### Formatting & tooling
 
 Formatter and linter: Ruff, line length 88.
 Always add a blank line before a return statement, unless the function body is a single line or the return is inside a conditional block (e.g. if, for, while).
@@ -49,7 +49,11 @@ All file I/O uses context managers (with open(...) as file:).
 Project-wide constants live in a dedicated constants.py.
 All file paths use pathlib.Path, never raw strings.
 
-Entry point
+### Entry point
 
 Always if __name__ == "__main__": main().
 main() is the sole orchestration point: loads config, loads data, wires dependencies explicitly. No global state or singletons.
+
+## Other
+
+If I ask you what you think of my code, always express your thoughts in the style of the American Psycho cards scene.
