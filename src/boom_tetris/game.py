@@ -32,9 +32,15 @@ class Game:
 
         pg.init()
 
+        # General
         self.renderer = Renderer(config=self.config)
         self.board = Board(config=self.config)
 
+        # Colors
+        self.window_background_color = config.WINDOW.COLOR.BACKGROUND
+        self.board_background_color = config.BOARD.COLOR.BACKGROUND
+
+        # Polyomino's.
         self.polyomino = Polyomino(
             self.config.POLYOMINO.SPAWN_POSITION[0],
             self.config.POLYOMINO.SPAWN_POSITION[1],
@@ -99,7 +105,8 @@ class Game:
         )
 
     def initialize_scoring_dictionary(self) -> dict[int, int]:
-        """Build line-clear score multipliers for 1–4 rows at once.
+        """
+        Build line-clear score multipliers for 1–4 rows at once.
 
         Returns:
             Map from cleared line count to base points before level scaling.
@@ -219,7 +226,8 @@ class Game:
                 self.update_key_hold("DOWN", is_pressed=False)
 
     def handle_events(self) -> bool:
-        """Drain the event queue; return False when the user quits.
+        """
+        Drain the event queue; return False when the user quits.
 
         Returns:
             False if the window should close; True to keep running.
@@ -237,7 +245,8 @@ class Game:
         return True
 
     def update_lines_and_level(self, lines_cleared: int) -> None:
-        """Update total lines and level using NTSC-style advancement rules.
+        """
+        Update total lines and level using NTSC-style advancement rules.
 
         Args:
             lines_cleared: Rows removed in the most recent lock step.
@@ -256,7 +265,8 @@ class Game:
         self.line_counter += lines_cleared
 
     def update_score(self, level: int, lines_cleared: int) -> None:
-        """Add points for a line clear scaled by current level.
+        """
+        Add points for a line clear scaled by current level.
 
         Args:
             level: Level index before applying the score increment.
@@ -315,7 +325,8 @@ class Game:
                 self.last_drop_time = current_time
 
     def update(self) -> bool:
-        """Render one frame, run timers and DAS, then process pygame events.
+        """
+        Render one frame, run timers and DAS, then process pygame events.
 
         Returns:
             False when ``handle_events`` reports quit; True otherwise.
@@ -328,7 +339,13 @@ class Game:
             )
 
             self.renderer.draw_grid_lines(board=self.board)
-            self.renderer.draw_block_hidden_rows(board=self.board)
+
+            self.renderer.draw_rect(
+                rect=self.board.hidden_rows_rect, color=self.window_background_color
+            )
+            self.renderer.draw_rect(
+                rect=self.board.line_counter_rect, color=self.board_background_color
+            )
 
         self.handle_timers()
         self.update_das(dt=self.clock.tick(self.frame_rate))

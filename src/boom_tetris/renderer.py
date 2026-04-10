@@ -57,7 +57,8 @@ class Renderer:
         pg.display.set_mode(size=(self.window_width, self.window_height))
 
     def draw_board(self, board: Board) -> None:
-        """Fill the board rect and draw every locked block.
+        """
+        Fill the board rect and draw every locked block.
 
         Args:
             board: Playfield whose ``cells`` matrix drives occupied squares.
@@ -84,7 +85,8 @@ class Renderer:
                 )
 
     def draw_polyomino(self, polyomino: Polyomino, block_rect: pg.Rect) -> None:
-        """Draw each block of a piece using a shared cell-sized rect template.
+        """
+        Draw each block of a piece using a shared cell-sized rect template.
 
         Args:
             polyomino: Piece with grid offset and block list.
@@ -135,15 +137,16 @@ class Renderer:
                     self.config.BOARD.GRID_LINES.LINE_WIDTH,
                 )
 
-    def draw_block_hidden_rows(self, board: Board) -> None:
+    def draw_rect(self, rect: pg.Rect, color: list[int]) -> None:
         """
-        Cover the spawn (hidden) region with the window background color.
+        Draw a filled rectangle onto the surface.
 
         Args:
-            board: Board exposing the hidden-rows rectangle in screen space.
+            rect: Pixel rectangle defining position and size.
+            color: RGB color to fill the rectangle with.
         """
         pg.draw.rect(
             surface=self.surface,
-            color=self.background_color,
-            rect=board.hidden_rows_rect,
+            color=color,
+            rect=rect,
         )

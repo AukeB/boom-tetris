@@ -21,7 +21,7 @@ class Board:
         Build dimensions, pygame rects, and an empty cell grid from config.
 
         Args:
-            config: Augmented model with board geometry and colors.
+            config: Updated model with board geometry and colors.
         """
         self.config = config
 
@@ -59,6 +59,13 @@ class Board:
             self.config.BOARD.RECT.TOP,
             self.config.BOARD.RECT.WIDTH,
             self.config.BOARD.RECT.HEIGHT * hidden_rows_ratio,
+        )
+
+        self.line_counter_rect = pg.Rect(
+            self.config.FIELDS.LINE_COUNTER.LEFT,
+            self.config.FIELDS.LINE_COUNTER.TOP,
+            self.config.FIELDS.LINE_COUNTER.WIDTH,
+            self.config.FIELDS.LINE_COUNTER.HEIGHT,
         )
 
     def collision(

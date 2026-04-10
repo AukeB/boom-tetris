@@ -78,6 +78,20 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         CELL: Cell
         GRID_LINES: GridLines
 
+    class Fields(ConfiguredBaseModel):
+        """Defines all fields besides the Board (The fields where Tetris is played)."""
+
+        class LineCounter(ConfiguredBaseModel):
+            """Defines the size and position of the 'line_counter' field."""
+
+            HEIGHT_CELLS: int
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
+
+        LINE_COUNTER: LineCounter
+
     class Polyomino(ConfiguredBaseModel):
         """Polyomino shape, color, and spawn configuration."""
 
@@ -129,6 +143,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
 
     WINDOW: Window
     BOARD: Board
+    FIELDS: Fields
     POLYOMINO: Polyomino
     DIRECTIONS: Directions
     DAS: Das

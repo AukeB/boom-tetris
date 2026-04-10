@@ -61,8 +61,6 @@ class PolyominoTransformer:
 
         return polyomino_mapping
 
-        return {}
-
     def _sort(self) -> None:
         """Sort block lists and reorder the property map to match."""
         # Sort the polyominos.

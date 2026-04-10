@@ -140,7 +140,7 @@ class ConfigManager:
 
         return config
 
-    def _add_computational_parameters(self, config: DotDict) -> DotDict:
+    def _compute_and_add_board_sizes(self, config: DotDict) -> DotDict:
         """
         Adds computed layout parameters to config.
 
@@ -182,9 +182,7 @@ class ConfigManager:
         window_horizontal_mid = config.WINDOW.WIDTH / 2
         margin = config.WINDOW.HEIGHT / config.WINDOW.RATIO_MARGIN_TO_WINDOW_HEIGHT
         unscaled_board_height = config.WINDOW.HEIGHT - (2 * margin)
-        board_width = unscaled_board_height * (
-            config.BOARD.DIMENSIONS.COLS / rows_total
-        )
+        board_width = unscaled_board_height * config.BOARD.DIMENSIONS.COLS / rows_total
         board_left = window_horizontal_mid - board_width / 2
         board_top = margin
         cell_width = board_width / config.BOARD.DIMENSIONS.COLS
@@ -200,12 +198,14 @@ class ConfigManager:
         board_left = window_horizontal_mid - board_width / 2
 
         # Computations to add line counter field above the board.
-        line_counter_height = 2 * cell_height
-        scale_ratio = (
-            config.WINDOW.HEIGHT - (2 * margin) - line_counter_height - margin
-        ) / unscaled_board_height
+        line_counter_height_in_cells = config.FIELDS.LINE_COUNTER.HEIGHT_CELLS
+        line_counter_height = line_counter_height_in_cells * cell_height
+        scale_ratio = (config.WINDOW.HEIGHT - 3 * margin) / (
+            unscaled_board_height + line_counter_height_in_cells * cell_height
+        )
         cell_height *= scale_ratio
         cell_width *= scale_ratio
+        line_counter_height = line_counter_height_in_cells * cell_height
         board_height *= scale_ratio
         board_width *= scale_ratio
         board_left = window_horizontal_mid - board_width / 2
@@ -234,6 +234,14 @@ class ConfigManager:
             - (config.BOARD.DIMENSIONS.ROWS_HIDDEN * cell_height)
         )
 
+        # Line counter field
+        line_counter_height = cell_height * config.FIELDS.LINE_COUNTER.HEIGHT_CELLS
+
+        config.FIELDS.LINE_COUNTER.LEFT = board_left
+        config.FIELDS.LINE_COUNTER.TOP = margin
+        config.FIELDS.LINE_COUNTER.WIDTH = board_width
+        config.FIELDS.LINE_COUNTER.HEIGHT = line_counter_height
+
         # Adding computed parameters back to config.
         config.WINDOW.MARGIN = margin
         config.WINDOW.WIDTH = window_width
@@ -253,6 +261,21 @@ class ConfigManager:
             "HEIGHT": cell_height,
         }
 
+        return config
+
+    def _add_polyomino_spawn_positions(self, config: DotDict) -> DotDict:
+        """
+        Compute and store polyomino spawn positions in grid coordinates.
+
+        1. Set active piece spawn at horizontal centre, just inside hidden rows.
+        2. Set next piece preview spawn to the right of the board.
+
+        Args:
+            config: Mutable dot-config with snapped board dimensions.
+
+        Returns:
+            Same config with SPAWN_POSITION and SPAWN_POSITION_NEXT populated.
+        """
         # Add other parameters.
         config.POLYOMINO.SPAWN_POSITION = [
             config.BOARD.DIMENSIONS.COLS // 2,
@@ -350,7 +373,8 @@ class ConfigManager:
 
         # Add computational parameters.
         updated_config = self._add_window_resolution(config=config_source)
-        updated_config = self._add_computational_parameters(config=updated_config)
+        updated_config = self._compute_and_add_board_sizes(config=updated_config)
+        updated_config = self._add_polyomino_spawn_positions(config=updated_config)
         updated_config = self._add_all_polyonomios(config=updated_config)
 
         # Write the updated configurationt to disk.
