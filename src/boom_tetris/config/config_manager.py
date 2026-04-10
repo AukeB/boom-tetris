@@ -14,10 +14,7 @@ from src.boom_tetris.constants import (
     CONFIG_RUNTIME_FILE_PATH,
 )
 
-from src.boom_tetris.utils.utils_other import (
-    get_window_size_from_screen_resolution,
-    normalize_float,
-)
+from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 from src.boom_tetris.utils.utils_dict import format_for_writing_to_yaml_file
 
 
@@ -150,7 +147,7 @@ class ConfigManager:
         """
         Adds computed layout parameters to config.
 
-        Computes board geometry in three phases. The core challenge is a
+        Computes board geometry in four phases. The core challenge is a
         chicken-and-egg problem: cell size depends on board size, but board
         size depends on the space reserved for UI elements like the line
         counter field, which is ideally expressed in terms of cell size.
@@ -161,12 +158,17 @@ class ConfigManager:
         works because all dimensions scale linearly, so the ratios remain
         correct regardless of the initial values.
 
-        The three phases are:
+        The four phases are:
         - Initial: base dimensions from window size and margin.
         - Hidden rows: rescale so that hidden rows sit above the visible
             area, allowing pieces to rotate at spawn without being visible.
         - Line counter: rescale again to reserve space for the line counter
             field above the board, maintaining square cells throughout.
+        - Snap: round cell size to the nearest integer pixel, then recompute
+            all dependent dimensions from that snapped value. This is required
+            because pygame's Rect silently truncates float dimensions to
+            integers on construction, which causes sub-pixel gaps to accumulate
+            across rows and columns during rendering.
 
         Args:
             config: DotDict containing window and board configuration,
@@ -217,21 +219,41 @@ class ConfigManager:
             - (config.BOARD.DIMENSIONS.ROWS_HIDDEN * cell_height)
         )
 
+        # Snap cell size to nearest integer and recompute all dependent dimensions.
+        snap_ratio = round(cell_height) / cell_height
+        cell_height = round(cell_height)
+        cell_width = round(cell_width)
+        board_height = rows_total * cell_height
+        board_width = config.BOARD.DIMENSIONS.COLS * cell_width
+        line_counter_height = round(line_counter_height * snap_ratio)
+        margin = round(margin * snap_ratio)
+        window_width = round(config.WINDOW.WIDTH * snap_ratio)
+        window_height = round(config.WINDOW.HEIGHT * snap_ratio)
+        board_left = round(window_width / 2 - board_width / 2)
+        board_top = (
+            margin
+            + line_counter_height
+            + margin
+            - (config.BOARD.DIMENSIONS.ROWS_HIDDEN * cell_height)
+        )
+
         # Adding computed parameters back to config.
         config.WINDOW.MARGIN = margin
+        config.WINDOW.WIDTH = window_width
+        config.WINDOW.HEIGHT = window_height
 
         config.BOARD.DIMENSIONS.ROWS_TOTAL = rows_total
 
         config.BOARD.RECT = {
-            "LEFT": normalize_float(board_left),
-            "TOP": normalize_float(board_top),
-            "WIDTH": normalize_float(board_width),
-            "HEIGHT": normalize_float(board_height),
+            "LEFT": board_left,
+            "TOP": board_top,
+            "WIDTH": board_width,
+            "HEIGHT": board_height,
         }
 
         config.BOARD.CELL = {
-            "WIDTH": normalize_float(cell_width),
-            "HEIGHT": normalize_float(cell_height),
+            "WIDTH": cell_width,
+            "HEIGHT": cell_height,
         }
 
         # Add other parameters.

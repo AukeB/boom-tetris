@@ -7,18 +7,10 @@ ruff:
 	uv run ruff format $(PROJECT_NAME)
 	@echo "🔧 Successfully executed ruff."
 
-# Type-check code with Mypy
-# --disallow-untyped-calls: Error when calling functions without type hints
-# --disallow-untyped-defs: Error on functions without type hints
-# --ignore-missing-imports: Suppresses errors about external packages lacking type hints
-# --follow-imports=skip: Skips checking imported modules to speed up analysis
-mypy:
-	uv run mypy $(PROJECT_NAME) \
-		--disallow-untyped-calls \
-		--disallow-untyped-defs \
-		--ignore-missing-imports \
-		--follow-imports=skip
-	@echo "🔍 Successfully executed mypy."
+# Static type-check code with ty
+ty:
+	uv run ty check
+	@echo "🔍 Successfully executed ty."
 
 # Remove caches and temporary files
 clean:
@@ -43,7 +35,7 @@ git:
 # Run full workflow: format, type-check, test, clean, commit
 all:
 	make ruff
-	make mypy
+	make ty
 	make clean
 	make git
 	@echo "⚡ Successfully executed all tasks."

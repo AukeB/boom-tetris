@@ -32,7 +32,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         RATIO_MARGIN_TO_WINDOW_HEIGHT: int
         WIDTH: int
         HEIGHT: int
-        MARGIN: float
+        MARGIN: int
         COLOR: Color
 
     class Board(ConfiguredBaseModel):
@@ -49,10 +49,10 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         class Rect(ConfiguredBaseModel):
             """Pixel coordinates and size of the board rectangle."""
 
-            LEFT: float
-            TOP: float
-            WIDTH: float
-            HEIGHT: float
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
 
         class Color(ConfiguredBaseModel):
             """Board color settings."""
@@ -62,8 +62,8 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         class Cell(ConfiguredBaseModel):
             """Pixel dimensions of a single board cell."""
 
-            WIDTH: float
-            HEIGHT: float
+            WIDTH: int
+            HEIGHT: int
 
         class GridLines(ConfiguredBaseModel):
             """Grid line rendering configuration."""

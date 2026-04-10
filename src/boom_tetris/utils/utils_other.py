@@ -43,22 +43,3 @@ def get_window_size_from_screen_resolution(
     height = max(min_height, int(desktop_height * WINDOW_SIZE_SCREEN_FRACTION))
 
     return width, height
-
-
-def normalize_float(value: float, ndigits: int = 4) -> float:
-    """
-    Normalize a floating-point value by rounding it to a fixed precision.
-
-    This helps eliminate floating-point representation artifacts (e.g.
-    ``-199.20000000000002``) that can appear during arithmetic operations,
-    ensuring cleaner and more stable values for serialization (e.g. YAML)
-    and rendering logic.
-
-    Args:
-        value (float): The floating-point number to normalize.
-        ndigits (int): Number of decimal places to round to (default: 4).
-
-    Returns:
-        float: The rounded floating-point value.
-    """
-    return round(value, ndigits)
