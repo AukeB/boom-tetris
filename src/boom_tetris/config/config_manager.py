@@ -140,7 +140,7 @@ class ConfigManager:
 
         return config
 
-    def _compute_and_add_board_sizes(self, config: DotDict) -> DotDict:
+    def _add_board_and_line_counter_fields(self, config: DotDict) -> DotDict:
         """
         Adds computed layout parameters to config.
 
@@ -293,7 +293,23 @@ class ConfigManager:
         return config
 
     def _add_next_field(self, config: DotDict) -> DotDict:
-        """ """
+        """
+        Compute and store pixel geometry for the next piece preview field.
+
+        The next field sits to the right of the board, vertically centered
+        on the board's midpoint.
+
+        1. Derive pixel height from cell size and configured cell units.
+        2. Set LEFT to the right edge of the board plus one margin.
+        3. Set TOP so the field is vertically centered on the board.
+        4. Derive WIDTH from cell size and configured cell units.
+
+        Args:
+            config: Mutable dot-config with snapped board geometry.
+
+        Returns:
+            Same config with NEXT pixel geometry populated.
+        """
         next_height = config.FIELDS.NEXT.HEIGHT_CELLS * config.BOARD.CELL.HEIGHT
 
         config.FIELDS.NEXT.LEFT = (
@@ -310,7 +326,22 @@ class ConfigManager:
         return config
 
     def _add_level_field(self, config: DotDict) -> DotDict:
-        """ """
+        """
+        Compute and store pixel geometry for the level field.
+
+        The level field sits to the right of the board, directly below
+        the next piece preview field.
+
+        1. Set LEFT to the right edge of the board plus one margin.
+        2. Set TOP to the bottom edge of the next field plus one margin.
+        3. Derive WIDTH and HEIGHT from cell size and configured cell units.
+
+        Args:
+            config: Mutable dot-config with snapped board and next field geometry.
+
+        Returns:
+            Same config with LEVEL pixel geometry populated.
+        """
         config.FIELDS.LEVEL.LEFT = (
             config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
         )
@@ -327,7 +358,22 @@ class ConfigManager:
         return config
 
     def _add_statistics_field(self, config: DotDict) -> DotDict:
-        """ """
+        """
+        Compute and store pixel geometry for the statistics field.
+
+        The statistics field sits to the left of the board, aligned with
+        the bottom edge of the board.
+
+        1. Derive WIDTH and HEIGHT from cell size and configured cell units.
+        2. Set LEFT to the left edge of the board minus one margin and field width.
+        3. Set TOP so the field's bottom edge aligns with the board's bottom edge.
+
+        Args:
+            config: Mutable dot-config with snapped board geometry.
+
+        Returns:
+            Same config with STATISTICS pixel geometry populated.
+        """
         statistics_width = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.STATISTICS.WIDTH_CELLS
         )
@@ -347,7 +393,23 @@ class ConfigManager:
         return config
 
     def _add_type_field(self, config: DotDict) -> DotDict:
-        """ """
+        """
+        Compute and store pixel geometry for the type field.
+
+        The type field sits to the left of the board, horizontally centered
+        on the statistics field and vertically centered on the line counter field.
+
+        1. Derive WIDTH and HEIGHT from cell size and configured cell units.
+        2. Set LEFT so the field is horizontally centered on the statistics field.
+        3. Set TOP so the field is vertically centered on the line counter field.
+
+        Args:
+            config: Mutable dot-config with snapped board, statistics, and
+                line counter geometry.
+
+        Returns:
+            Same config with TYPE pixel geometry populated.
+        """
         type_width = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.WIDTH_CELLS
         type_height = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.HEIGHT_CELLS
 
@@ -363,6 +425,34 @@ class ConfigManager:
         config.FIELDS.TYPE.HEIGHT = type_height
 
         return config
+
+    def _add_all_remaining_fields(self, config: DotDict) -> DotDict:
+        """
+        Compute and store pixel geometry for all UI fields except the tetris
+        board and the line counter field, because those were already added.
+
+        Fields must be added in dependency order, as some fields derive their
+        position from previously computed fields.
+
+        1. Add score field to the right of the board.
+        2. Add next piece preview field to the right of the board.
+        3. Add level field below the next piece preview field.
+        4. Add statistics field to the left of the board.
+        5. Add type field centered on the statistics and line counter fields.
+
+        Args:
+            config: Mutable dot-config with snapped board geometry.
+
+        Returns:
+            Same config with all remaining field pixel geometries populated.
+        """
+        updated_config = self._add_score_field(config=config)
+        updated_config = self._add_next_field(config=updated_config)
+        updated_config = self._add_level_field(config=updated_config)
+        updated_config = self._add_statistics_field(config=updated_config)
+        updated_config = self._add_type_field(config=updated_config)
+
+        return updated_config
 
     def _add_polyomino_spawn_positions(self, config: DotDict) -> DotDict:
         """
@@ -474,12 +564,8 @@ class ConfigManager:
 
         # Add computational parameters.
         updated_config = self._add_window_resolution(config=config_source)
-        updated_config = self._compute_and_add_board_sizes(config=updated_config)
-        updated_config = self._add_score_field(config=updated_config)
-        updated_config = self._add_next_field(config=updated_config)
-        updated_config = self._add_level_field(config=updated_config)
-        updated_config = self._add_statistics_field(config=updated_config)
-        updated_config = self._add_type_field(config=updated_config)
+        updated_config = self._add_board_and_line_counter_fields(config=updated_config)
+        updated_config = self._add_all_remaining_fields(config=updated_config)
         updated_config = self._add_polyomino_spawn_positions(config=updated_config)
         updated_config = self._add_all_polyonomios(config=updated_config)
 
