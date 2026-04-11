@@ -71,8 +71,6 @@ FIELDS:
     TOP: COMPUTED
     WIDTH: COMPUTED
     HEIGHT: COMPUTED
-
-
     
 POLYOMINO:
   SIZE: 4
@@ -105,7 +103,7 @@ SCORE:
   HARD_DROP_PER_LINE: 1
 
 GENERAL:
-  START_LEVEL: 0
+  START_LEVEL: 18
   SOFT_DROP_SPEED: 0.5 # Units: Gravity. Definition of gravity: Gravity is expressed in unit G, where 1G = 1 cell per frame, and 0.1G = 1 cell per 10 frames
   ARE_DELAY: 18
   NTSC_FRAMERATE: 60.0988
