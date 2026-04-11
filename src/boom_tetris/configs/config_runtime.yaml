@@ -43,10 +43,10 @@ FIELDS:
     HEIGHT: 654
   NEXT:
     HEIGHT_CELLS: 4
-    WIDTH_CELLS: 4
+    WIDTH_CELLS: 5
     LEFT: 2915
     TOP: 1111
-    WIDTH: 436
+    WIDTH: 545
     HEIGHT: 436
   LEVEL:
     HEIGHT_CELLS: 3
@@ -82,7 +82,7 @@ POLYOMINO:
     - [[0, 0], [0, 1], [0, 2], [0, 3]]
     - [[0, 0], [1, 0], [1, 1], [2, 1]]
   SPAWN_POSITION: [5, 2]
-  SPAWN_POSITION_NEXT: [13, 3]
+  SPAWN_POSITION_NEXT: [13, 10]
 
 DIRECTIONS:
   UP: [0, -1]

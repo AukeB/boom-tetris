@@ -334,9 +334,6 @@ class Game:
         with self.renderer:
             self.renderer.draw_board(board=self.board)
             self.renderer.draw_polyomino(self.polyomino, self.board.cell_rect.copy())
-            self.renderer.draw_polyomino(
-                self.next_polyomino, self.board.cell_rect.copy()
-            )
 
             self.renderer.draw_grid_lines(board=self.board)
 
@@ -360,6 +357,10 @@ class Game:
             )
             self.renderer.draw_rect(
                 rect=self.board.statistics_rect, color=self.board_background_color
+            )
+
+            self.renderer.draw_polyomino(
+                self.next_polyomino, self.board.cell_rect.copy()
             )
 
         self.handle_timers()

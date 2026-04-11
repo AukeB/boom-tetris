@@ -474,7 +474,9 @@ class ConfigManager:
         ]
         config.POLYOMINO.SPAWN_POSITION_NEXT = [
             config.BOARD.DIMENSIONS.COLS + 3,
-            config.BOARD.DIMENSIONS.ROWS_HIDDEN + 1,
+            int(config.BOARD.DIMENSIONS.ROWS / 2),
+            # int(config.FIELDS.NEXT.LEFT + config.FIELDS.NEXT.WIDTH / 2),
+            # int(config.FIELDS.NEXT.TOP + config.FIELDS.NEXT.HEIGHT / 2),
         ]
 
         return config
