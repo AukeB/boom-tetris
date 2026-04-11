@@ -68,6 +68,41 @@ class Board:
             self.config.FIELDS.LINE_COUNTER.HEIGHT,
         )
 
+        self.score_rect = pg.Rect(
+            self.config.FIELDS.SCORE.LEFT,
+            self.config.FIELDS.SCORE.TOP,
+            self.config.FIELDS.SCORE.WIDTH,
+            self.config.FIELDS.SCORE.HEIGHT,
+        )
+
+        self.next_rect = pg.Rect(
+            self.config.FIELDS.NEXT.LEFT,
+            self.config.FIELDS.NEXT.TOP,
+            self.config.FIELDS.NEXT.WIDTH,
+            self.config.FIELDS.NEXT.HEIGHT,
+        )
+
+        self.level_rect = pg.Rect(
+            self.config.FIELDS.LEVEL.LEFT,
+            self.config.FIELDS.LEVEL.TOP,
+            self.config.FIELDS.LEVEL.WIDTH,
+            self.config.FIELDS.LEVEL.HEIGHT,
+        )
+
+        self.type_rect = pg.Rect(
+            self.config.FIELDS.TYPE.LEFT,
+            self.config.FIELDS.TYPE.TOP,
+            self.config.FIELDS.TYPE.WIDTH,
+            self.config.FIELDS.TYPE.HEIGHT,
+        )
+
+        self.statistics_rect = pg.Rect(
+            self.config.FIELDS.STATISTICS.LEFT,
+            self.config.FIELDS.STATISTICS.TOP,
+            self.config.FIELDS.STATISTICS.WIDTH,
+            self.config.FIELDS.STATISTICS.HEIGHT,
+        )
+
     def collision(
         self,
         polyomino: Polyomino,

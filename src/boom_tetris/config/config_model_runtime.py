@@ -82,7 +82,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         """Defines all fields besides the Board (The fields where Tetris is played)."""
 
         class LineCounter(ConfiguredBaseModel):
-            """Defines the size and position of the 'line_counter' field."""
+            """Defines the size and position of the 'LineCounter' field."""
 
             HEIGHT_CELLS: int
             LEFT: int
@@ -90,7 +90,62 @@ class ConfigModelRuntime(ConfiguredBaseModel):
             WIDTH: int
             HEIGHT: int
 
+        class Score(ConfiguredBaseModel):
+            """Defines the size an position of the 'Score' field."""
+
+            HEIGHT_CELLS: int
+            WIDTH_CELLS: int
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
+
+        class Next(ConfiguredBaseModel):
+            """Defines the size an position of the 'Next' field."""
+
+            HEIGHT_CELLS: int
+            WIDTH_CELLS: int
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
+
+        class Level(ConfiguredBaseModel):
+            """Defines the size an position of the 'Level' field."""
+
+            HEIGHT_CELLS: int
+            WIDTH_CELLS: int
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
+
+        class Statistics(ConfiguredBaseModel):
+            """Defines the size an position of the 'Statistics' field."""
+
+            HEIGHT_CELLS: int
+            WIDTH_CELLS: int
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
+
+        class Type(ConfiguredBaseModel):
+            """Defines the size an position of the 'Type' field."""
+
+            HEIGHT_CELLS: int
+            WIDTH_CELLS: int
+            LEFT: int
+            TOP: int
+            WIDTH: int
+            HEIGHT: int
+
         LINE_COUNTER: LineCounter
+        SCORE: Score
+        NEXT: Next
+        LEVEL: Level
+        STATISTICS: Statistics
+        TYPE: Type
 
     class Polyomino(ConfiguredBaseModel):
         """Polyomino shape, color, and spawn configuration."""

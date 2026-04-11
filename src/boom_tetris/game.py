@@ -346,6 +346,21 @@ class Game:
             self.renderer.draw_rect(
                 rect=self.board.line_counter_rect, color=self.board_background_color
             )
+            self.renderer.draw_rect(
+                rect=self.board.score_rect, color=self.board_background_color
+            )
+            self.renderer.draw_rect(
+                rect=self.board.next_rect, color=self.board_background_color
+            )
+            self.renderer.draw_rect(
+                rect=self.board.level_rect, color=self.board_background_color
+            )
+            self.renderer.draw_rect(
+                rect=self.board.type_rect, color=self.board_background_color
+            )
+            self.renderer.draw_rect(
+                rect=self.board.statistics_rect, color=self.board_background_color
+            )
 
         self.handle_timers()
         self.update_das(dt=self.clock.tick(self.frame_rate))

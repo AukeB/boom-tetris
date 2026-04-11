@@ -263,6 +263,107 @@ class ConfigManager:
 
         return config
 
+    def _add_score_field(self, config: DotDict) -> DotDict:
+        """
+        Compute and store pixel geometry for the score field.
+
+        The score field sits to the right of the board, aligned with the top margin.
+
+        1. Set LEFT to the right edge of the board plus one margin.
+        2. Set TOP to the top margin.
+        3. Derive WIDTH and HEIGHT from cell size and configured cell units.
+
+        Args:
+            config: Mutable dot-config with snapped board geometry.
+
+        Returns:
+            Same config with SCORE pixel geometry populated.
+        """
+        config.FIELDS.SCORE.LEFT = (
+            config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
+        )
+        config.FIELDS.SCORE.TOP = config.WINDOW.MARGIN
+        config.FIELDS.SCORE.WIDTH = (
+            config.BOARD.CELL.HEIGHT * config.FIELDS.SCORE.WIDTH_CELLS
+        )
+        config.FIELDS.SCORE.HEIGHT = (
+            config.BOARD.CELL.HEIGHT * config.FIELDS.SCORE.HEIGHT_CELLS
+        )
+
+        return config
+
+    def _add_next_field(self, config: DotDict) -> DotDict:
+        """ """
+        next_height = config.FIELDS.NEXT.HEIGHT_CELLS * config.BOARD.CELL.HEIGHT
+
+        config.FIELDS.NEXT.LEFT = (
+            config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
+        )
+        config.FIELDS.NEXT.TOP = int(
+            config.BOARD.RECT.TOP + config.BOARD.RECT.HEIGHT / 2 - next_height / 2
+        )
+        config.FIELDS.NEXT.WIDTH = (
+            config.FIELDS.NEXT.WIDTH_CELLS * config.BOARD.CELL.HEIGHT
+        )
+        config.FIELDS.NEXT.HEIGHT = next_height
+
+        return config
+
+    def _add_level_field(self, config: DotDict) -> DotDict:
+        """ """
+        config.FIELDS.LEVEL.LEFT = (
+            config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
+        )
+        config.FIELDS.LEVEL.TOP = (
+            config.FIELDS.NEXT.TOP + config.FIELDS.NEXT.HEIGHT + config.WINDOW.MARGIN
+        )
+        config.FIELDS.LEVEL.WIDTH = (
+            config.BOARD.CELL.HEIGHT * config.FIELDS.LEVEL.WIDTH_CELLS
+        )
+        config.FIELDS.LEVEL.HEIGHT = (
+            config.BOARD.CELL.HEIGHT * config.FIELDS.LEVEL.HEIGHT_CELLS
+        )
+
+        return config
+
+    def _add_statistics_field(self, config: DotDict) -> DotDict:
+        """ """
+        statistics_width = (
+            config.BOARD.CELL.HEIGHT * config.FIELDS.STATISTICS.WIDTH_CELLS
+        )
+        statistics_height = (
+            config.BOARD.CELL.HEIGHT * config.FIELDS.STATISTICS.HEIGHT_CELLS
+        )
+
+        config.FIELDS.STATISTICS.LEFT = (
+            config.BOARD.RECT.LEFT - config.WINDOW.MARGIN - statistics_width
+        )
+        config.FIELDS.STATISTICS.TOP = (
+            config.BOARD.RECT.TOP + config.BOARD.RECT.HEIGHT - statistics_height
+        )
+        config.FIELDS.STATISTICS.WIDTH = statistics_width
+        config.FIELDS.STATISTICS.HEIGHT = statistics_height
+
+        return config
+
+    def _add_type_field(self, config: DotDict) -> DotDict:
+        """ """
+        type_width = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.WIDTH_CELLS
+        type_height = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.HEIGHT_CELLS
+
+        config.FIELDS.TYPE.LEFT = int(
+            config.FIELDS.STATISTICS.LEFT
+            + config.FIELDS.STATISTICS.WIDTH / 2
+            - type_width / 2
+        )
+        config.FIELDS.TYPE.TOP = int(
+            config.FIELDS.LINE_COUNTER.TOP + config.FIELDS.LINE_COUNTER.HEIGHT / 2
+        )
+        config.FIELDS.TYPE.WIDTH = type_width
+        config.FIELDS.TYPE.HEIGHT = type_height
+
+        return config
+
     def _add_polyomino_spawn_positions(self, config: DotDict) -> DotDict:
         """
         Compute and store polyomino spawn positions in grid coordinates.
@@ -374,6 +475,11 @@ class ConfigManager:
         # Add computational parameters.
         updated_config = self._add_window_resolution(config=config_source)
         updated_config = self._compute_and_add_board_sizes(config=updated_config)
+        updated_config = self._add_score_field(config=updated_config)
+        updated_config = self._add_next_field(config=updated_config)
+        updated_config = self._add_level_field(config=updated_config)
+        updated_config = self._add_statistics_field(config=updated_config)
+        updated_config = self._add_type_field(config=updated_config)
         updated_config = self._add_polyomino_spawn_positions(config=updated_config)
         updated_config = self._add_all_polyonomios(config=updated_config)
 
