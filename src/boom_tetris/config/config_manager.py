@@ -24,28 +24,31 @@ yaml.indent(mapping=2, sequence=4, offset=2)
 class ConfigManager:
     """High-level configuration I/O and update pipeline for Boom Tetris.
 
-    Responsibilities: - Load configuration files from disk. - Compute derived runtime parameters
-    (board dimensions, polyomino shapes, etc.). - Serialize updated configuration to disk for
-    runtime use.
+    Responsibilities: - Load configuration files from disk. - Compute derived
+    runtime parameters (board dimensions, polyomino shapes, etc.). - Serialize
+    updated configuration to disk for runtime use.
 
-    Key Concepts: - `config_source`: The editable, authoritative configuration loaded from the
-    source YAML file (`CONFIG_SOURCE_FILE_PATH`). Validated against `ConfigModelSource`. -
-    `config_runtime`: The derived runtime configuration validated against `ConfigModelRuntime`,
-    including computed fields required for the game to run. NOT edited manually.
+    Key Concepts: - `config_source`: The editable, authoritative configuration
+    loaded from the source YAML file (`CONFIG_SOURCE_FILE_PATH`). Validated
+    against `ConfigModelSource`. - `config_runtime`: The derived runtime
+    configuration validated against `ConfigModelRuntime`, including computed
+    fields required for the game to run. NOT edited manually.
 
-    Workflow: The main workflow of this class is executed via the `get_runtime_config` method.
+    Workflow: The main workflow of this class is executed via the
+    `get_runtime_config` method.
 
-    1. Loads the source config and validates it. 2. Converts it to a `DotDict` for easier mutation
-    and addition of computed fields (Pydantic models are immutable, so DotDict makes adding dynamic
-    fields convenient). 3. Computes board metrics, polyomino shapes, and other runtime parameters.
-    4. Writes the derived configuration to the runtime YAML file. 5. Reloads the runtime config and
-    validates it as a `ConfigModelRuntime`. 6. Adjusts certain field types (e.g., directions to
-    `Position` tuples).
+    1. Loads the source config and validates it. 2. Converts it to a `DotDict`
+    for easier mutation and addition of computed fields (Pydantic models are
+    immutable, so DotDict makes adding dynamic fields convenient). 3. Computes
+    board metrics, polyomino shapes, and other runtime parameters. 4. Writes the
+    derived configuration to the runtime YAML file. 5. Reloads the runtime
+    config and validates it as a `ConfigModelRuntime`. 6. Adjusts certain field
+    types (e.g., directions to `Position` tuples).
 
     Notes:
-        - `load_config_without_validation` is public because other modules may need to load YAML
-        data without converting it to a Pydantic model, e.g., for temporary or partial inspection,
-        manipulation, or testing.
+        - `load_config_without_validation` is public because other modules may
+        need to load YAML data without converting it to a Pydantic model, e.g.,
+        for temporary or partial inspection, manipulation, or testing.
     """
 
     def __init__(self) -> None:
@@ -60,45 +63,48 @@ class ConfigManager:
     def load_config_without_validation(self, file_path: Path) -> DotDict:
         """Load a YAML configuration file as a mutable DotDict.
 
-        This method reads a YAML file from disk and wraps its contents in a `DotDict` to allow
-        convenient dot-access for keys.
+        This method reads a YAML file from disk and wraps its contents in a
+        `DotDict` to allow convenient dot-access for keys.
 
         Args:
             file_path (Path): The path to the YAML file to load.
 
         Returns:
-            DotDict: The contents of the YAML file as a mutable dictionary supporting attribute-
-                style access.
+            DotDict: The contents of the YAML file as a mutable dictionary
+                supporting attribute- style access.
         """
         with open(file_path) as file:
             return DotDict(yaml.load(file))
 
     def _load_source_config(self) -> ConfigModelSource:
-        """Load the source configuration file and validate it against `ConfigModelSource`.
+        """Load the source configuration file and validate it against
+        `ConfigModelSource`.
 
         Returns:
             ConfigModelSource: A validated configuration model representing
             the editable source configuration.
 
         Notes:
-            This is the “authoritative” config that you can edit manually (`config.yaml`). It is
-            converted to the Pydantic model to enforce schema and type safety.
+            This is the “authoritative” config that you can edit manually
+            (`config.yaml`). It is converted to the Pydantic model to enforce
+            schema and type safety.
         """
         data = self.load_config_without_validation(self.config_source_file_path)
 
         return ConfigModelSource(**data)
 
     def _load_runtime_config(self) -> ConfigModelRuntime:
-        """Load the runtime configuration file and validate it against `ConfigModelRuntime`.
+        """Load the runtime configuration file and validate it against
+        `ConfigModelRuntime`.
 
         Returns:
-            ConfigModelRuntime: A validated configuration model ready for use in the game runtime,
-                with all computed fields included.
+            ConfigModelRuntime: A validated configuration model ready for use in
+                the game runtime, with all computed fields included.
 
         Notes:
-            This configuration is typically derived from the source config via internal computations
-            (board size, polyomino shapes, etc.). It should not be manually edited. Use this for all
-            runtime operations.
+            This configuration is typically derived from the source config via
+            internal computations (board size, polyomino shapes, etc.). It
+            should not be manually edited. Use this for all runtime operations.
         """
         data = self.load_config_without_validation(self.config_runtime_file_path)
 
@@ -107,8 +113,8 @@ class ConfigManager:
     def _add_window_resolution(self, config: DotDict) -> DotDict:
         """Resolve the pygame window dimensions from the current screen size.
 
-        1. Call window_size_from_screen() to get the scaled desktop resolution. 2. Write the
-        resulting width and height into config.WINDOW.
+        1. Call window_size_from_screen() to get the scaled desktop resolution.
+        2. Write the resulting width and height into config.WINDOW.
 
         Args:
             config: Mutable dot-config with a WINDOW section.
@@ -126,31 +132,34 @@ class ConfigManager:
     def _add_board_and_line_counter_fields(self, config: DotDict) -> DotDict:
         """Adds computed layout parameters to config.
 
-        Computes board geometry in four phases. The core challenge is a chicken- and-egg problem:
-        cell size depends on board size, but board size depends on the space reserved for UI
-        elements like the line counter field, which is ideally expressed in terms of cell size.
+        Computes board geometry in four phases. The core challenge is a chicken-
+        and-egg problem: cell size depends on board size, but board size depends
+        on the space reserved for UI elements like the line counter field, which
+        is ideally expressed in terms of cell size.
 
-        This is resolved by computing geometry twice via a scale_ratio, first for a board that fills
-        all available space, then rescaling to fit the actual available space after accounting for
-        UI elements. This works because all dimensions scale linearly, so the ratios remain correct
+        This is resolved by computing geometry twice via a scale_ratio, first
+        for a board that fills all available space, then rescaling to fit the
+        actual available space after accounting for UI elements. This works
+        because all dimensions scale linearly, so the ratios remain correct
         regardless of the initial values.
 
-        The four phases are: - Initial: base dimensions from window size and margin. - Hidden rows:
-        rescale so that hidden rows sit above the visible area, allowing pieces to rotate at spawn
-        without being visible. - Line counter: rescale again to reserve space for the line counter
-        field above the board, maintaining square cells throughout. - Snap: round cell size to the
-        nearest integer pixel, then recompute all dependent dimensions from that snapped value. This
-        is required because pygame's Rect silently truncates float dimensions to integers on
-        construction, which causes sub-pixel gaps to accumulate across rows and columns during
-        rendering.
+        The four phases are: - Initial: base dimensions from window size and
+        margin. - Hidden rows: rescale so that hidden rows sit above the visible
+        area, allowing pieces to rotate at spawn without being visible. - Line
+        counter: rescale again to reserve space for the line counter field above
+        the board, maintaining square cells throughout. - Snap: round cell size
+        to the nearest integer pixel, then recompute all dependent dimensions
+        from that snapped value. This is required because pygame's Rect silently
+        truncates float dimensions to integers on construction, which causes
+        sub-pixel gaps to accumulate across rows and columns during rendering.
 
         Args:
-            config: DotDict containing window and board configuration, including dimensions, margin
-                ratio, and polyomino settings.
+            config: DotDict containing window and board configuration, including
+                dimensions, margin ratio, and polyomino settings.
 
         Returns:
-            The same config object with computed layout parameters added, including board rect, cell
-                size, margin, and spawn positions.
+            The same config object with computed layout parameters added,
+                including board rect, cell size, margin, and spawn positions.
         """
         # Computations.
 
@@ -243,10 +252,12 @@ class ConfigManager:
     def _add_score_field(self, config: DotDict) -> DotDict:
         """Compute and store pixel geometry for the score field.
 
-        The score field sits to the right of the board, aligned with the top margin.
+        The score field sits to the right of the board, aligned with the top
+        margin.
 
-        1. Set LEFT to the right edge of the board plus one margin. 2. Set TOP to the top margin. 3.
-        Derive WIDTH and HEIGHT from cell size and configured cell units.
+        1. Set LEFT to the right edge of the board plus one margin. 2. Set TOP
+        to the top margin. 3. Derive WIDTH and HEIGHT from cell size and
+        configured cell units.
 
         Args:
             config: Mutable dot-config with snapped board geometry.
@@ -270,11 +281,13 @@ class ConfigManager:
     def _add_next_field(self, config: DotDict) -> DotDict:
         """Compute and store pixel geometry for the next piece preview field.
 
-        The next field sits to the right of the board, vertically centered on the board's midpoint.
+        The next field sits to the right of the board, vertically centered on
+        the board's midpoint.
 
-        1. Derive pixel height from cell size and configured cell units. 2. Set LEFT to the right
-        edge of the board plus one margin. 3. Set TOP so the field is vertically centered on the
-        board. 4. Derive WIDTH from cell size and configured cell units.
+        1. Derive pixel height from cell size and configured cell units. 2. Set
+        LEFT to the right edge of the board plus one margin. 3. Set TOP so the
+        field is vertically centered on the board. 4. Derive WIDTH from cell
+        size and configured cell units.
 
         Args:
             config: Mutable dot-config with snapped board geometry.
@@ -300,14 +313,16 @@ class ConfigManager:
     def _add_level_field(self, config: DotDict) -> DotDict:
         """Compute and store pixel geometry for the level field.
 
-        The level field sits to the right of the board, directly below the next piece preview field.
+        The level field sits to the right of the board, directly below the next
+        piece preview field.
 
-        1. Set LEFT to the right edge of the board plus one margin. 2. Set TOP to the bottom edge of
-        the next field plus one margin. 3. Derive WIDTH and HEIGHT from cell size and configured
-        cell units.
+        1. Set LEFT to the right edge of the board plus one margin. 2. Set TOP
+        to the bottom edge of the next field plus one margin. 3. Derive WIDTH
+        and HEIGHT from cell size and configured cell units.
 
         Args:
-            config: Mutable dot-config with snapped board and next field geometry.
+            config: Mutable dot-config with snapped board and next field
+                geometry.
 
         Returns:
             Same config with LEVEL pixel geometry populated.
@@ -330,12 +345,13 @@ class ConfigManager:
     def _add_statistics_field(self, config: DotDict) -> DotDict:
         """Compute and store pixel geometry for the statistics field.
 
-        The statistics field sits to the left of the board, aligned with the bottom edge of the
-        board.
+        The statistics field sits to the left of the board, aligned with the
+        bottom edge of the board.
 
-        1. Derive WIDTH and HEIGHT from cell size and configured cell units. 2. Set LEFT to the left
-        edge of the board minus one margin and field width. 3. Set TOP so the field's bottom edge
-        aligns with the board's bottom edge.
+        1. Derive WIDTH and HEIGHT from cell size and configured cell units. 2.
+        Set LEFT to the left edge of the board minus one margin and field width.
+        3. Set TOP so the field's bottom edge aligns with the board's bottom
+        edge.
 
         Args:
             config: Mutable dot-config with snapped board geometry.
@@ -364,15 +380,17 @@ class ConfigManager:
     def _add_type_field(self, config: DotDict) -> DotDict:
         """Compute and store pixel geometry for the type field.
 
-        The type field sits to the left of the board, horizontally centered on the statistics field
-        and vertically centered on the line counter field.
+        The type field sits to the left of the board, horizontally centered on
+        the statistics field and vertically centered on the line counter field.
 
-        1. Derive WIDTH and HEIGHT from cell size and configured cell units. 2. Set LEFT so the
-        field is horizontally centered on the statistics field. 3. Set TOP so the field is
-        vertically centered on the line counter field.
+        1. Derive WIDTH and HEIGHT from cell size and configured cell units. 2.
+        Set LEFT so the field is horizontally centered on the statistics field.
+        3. Set TOP so the field is vertically centered on the line counter
+        field.
 
         Args:
-            config: Mutable dot-config with snapped board, statistics, and line counter geometry.
+            config: Mutable dot-config with snapped board, statistics, and line
+                counter geometry.
 
         Returns:
             Same config with TYPE pixel geometry populated.
@@ -394,16 +412,16 @@ class ConfigManager:
         return config
 
     def _add_all_remaining_fields(self, config: DotDict) -> DotDict:
-        """Compute and store pixel geometry for all UI fields except the tetris board and the line
-        counter field, because those were already added.
+        """Compute and store pixel geometry for all UI fields except the tetris
+        board and the line counter field, because those were already added.
 
-        Fields must be added in dependency order, as some fields derive their position from
-        previously computed fields.
+        Fields must be added in dependency order, as some fields derive their
+        position from previously computed fields.
 
-        1. Add score field to the right of the board. 2. Add next piece preview field to the right
-        of the board. 3. Add level field below the next piece preview field. 4. Add statistics field
-        to the left of the board. 5. Add type field centered on the statistics and line counter
-        fields.
+        1. Add score field to the right of the board. 2. Add next piece preview
+        field to the right of the board. 3. Add level field below the next piece
+        preview field. 4. Add statistics field to the left of the board. 5. Add
+        type field centered on the statistics and line counter fields.
 
         Args:
             config: Mutable dot-config with snapped board geometry.
@@ -422,8 +440,8 @@ class ConfigManager:
     def _add_polyomino_spawn_positions(self, config: DotDict) -> DotDict:
         """Compute and store polyomino spawn positions in grid coordinates.
 
-        1. Set active piece spawn at horizontal centre, just inside hidden rows. 2. Set next piece
-        preview spawn to the right of the board.
+        1. Set active piece spawn at horizontal centre, just inside hidden rows.
+        2. Set next piece preview spawn to the right of the board.
 
         Args:
             config: Mutable dot-config with snapped board dimensions.
@@ -512,7 +530,8 @@ class ConfigManager:
         """Compute board metrics, shapes, write YAML, reload, and fix types.
 
         Args:
-            config: Base validated model from the main config file.ConfigModelRuntime
+            config: Base validated model from the main config
+                file.ConfigModelRuntime
 
         Returns:
             Final ``ConfigModel`` ready for the game (with ``Position`` dirs).
