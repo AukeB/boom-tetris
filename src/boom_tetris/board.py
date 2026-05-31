@@ -17,8 +17,7 @@ class Board:
         self,
         config: ConfigModelRuntime,
     ) -> None:
-        """
-        Build dimensions, pygame rects, and an empty cell grid from config.
+        """Build dimensions, pygame rects, and an empty cell grid from config.
 
         Args:
             config: Updated model with board geometry and colors.

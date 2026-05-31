@@ -12,6 +12,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "docstring-tailor>=0.1.2",
     "ruff>=0.11.6",
     "ty>=0.0.29",
 ]
@@ -21,6 +22,9 @@ select = [
     "I",    # isort-style import sorting
     #"ANN",  # annotation rules
 ]
+
+[tool.docstring_tailor]
+line-length = 100
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]

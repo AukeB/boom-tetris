@@ -18,8 +18,7 @@ class Renderer:
         self,
         config: ConfigModelRuntime,
     ) -> None:
-        """
-        Create the window and cache colors and dimensions from config.
+        """Create the window and cache colors and dimensions from config.
 
         Args:
             config: Augmented model with window and board layout.
@@ -57,8 +56,7 @@ class Renderer:
         pg.display.set_mode(size=(self.window_width, self.window_height))
 
     def draw_board(self, board: Board) -> None:
-        """
-        Fill the board rect and draw every locked block.
+        """Fill the board rect and draw every locked block.
 
         Args:
             board: Playfield whose ``cells`` matrix drives occupied squares.
@@ -85,13 +83,11 @@ class Renderer:
                 )
 
     def draw_polyomino(self, polyomino: Polyomino, block_rect: pg.Rect) -> None:
-        """
-        Draw each block of a piece using a shared cell-sized rect template.
+        """Draw each block of a piece using a shared cell-sized rect template.
 
         Args:
             polyomino: Piece with grid offset and block list.
-            block_rect: Prototype rect (size matches one cell); mutated while
-                drawing.
+            block_rect: Prototype rect (size matches one cell); mutated while drawing.
         """
         polyomino_position = Position(
             x=block_rect.x + polyomino.x * block_rect.width,
@@ -104,8 +100,7 @@ class Renderer:
             pg.draw.rect(self.surface, (self.config.POLYOMINO.COLOR), block_rect)
 
     def draw_grid_lines(self, board: Board) -> None:
-        """
-        Draw optional vertical and horizontal grid lines when enabled.
+        """Draw optional vertical and horizontal grid lines when enabled.
 
         Args:
             board: Board providing pixel geometry and visible row range.
@@ -138,8 +133,7 @@ class Renderer:
                 )
 
     def draw_rect(self, rect: pg.Rect, color: list[int]) -> None:
-        """
-        Draw a filled rectangle onto the surface.
+        """Draw a filled rectangle onto the surface.
 
         Args:
             rect: Pixel rectangle defining position and size.

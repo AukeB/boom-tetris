@@ -2,8 +2,7 @@
 
 
 def convert_drop_frames_to_time(framerate: float, frames_per_cell: int) -> float:
-    """
-    Convert per-cell drop duration from frames to milliseconds.
+    """Convert per-cell drop duration from frames to milliseconds.
 
     Args:
         framerate: Video frame rate in Hz.
@@ -16,8 +15,7 @@ def convert_drop_frames_to_time(framerate: float, frames_per_cell: int) -> float
 
 
 def compute_first_level_advancement(start_level: int) -> int:
-    """
-    Lines cleared needed before the first level increase.
+    """Lines cleared needed before the first level increase.
 
     Args:
         start_level: Starting level index from configuration.
@@ -29,8 +27,7 @@ def compute_first_level_advancement(start_level: int) -> int:
 
 
 def get_frames_per_cell(level: int, frames_per_cell: dict[int, int]) -> int:
-    """
-    Look up drop frames per cell, stepping down until a key exists.
+    """Look up drop frames per cell, stepping down until a key exists.
 
     Args:
         level: Current game level.
@@ -46,8 +43,7 @@ def get_frames_per_cell(level: int, frames_per_cell: dict[int, int]) -> int:
 
 
 def frames2ms(frame_rate: float, frames: int) -> float:
-    """
-    Convert a whole number of frames to milliseconds.
+    """Convert a whole number of frames to milliseconds.
 
     Args:
         frame_rate: Video frame rate in Hz.
@@ -60,8 +56,7 @@ def frames2ms(frame_rate: float, frames: int) -> float:
 
 
 def gravity2ms(frame_rate: float, gravity: float) -> float:
-    """
-    Convert soft-drop gravity (cells per frame) to milliseconds per cell.
+    """Convert soft-drop gravity (cells per frame) to milliseconds per cell.
 
     Args:
         frame_rate: Video frame rate in Hz.
