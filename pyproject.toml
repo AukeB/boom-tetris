@@ -5,6 +5,7 @@ description = "Boom! Tetris!"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "docstring-tailor>=0.2.0",
     "pydantic>=2.11.5",
     "pygame>=2.6.1",
     "ruamel-yaml>=0.18.11",
@@ -24,7 +25,9 @@ select = [
 ]
 
 [tool.docstring_tailor]
-line-length = 80
+line-length = 88
+style = "google"
+detect-lists = true
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]

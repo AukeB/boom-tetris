@@ -141,9 +141,8 @@ class PolyominoTransformer:
         self._sort()
 
     def _mirror_horizontally(self) -> None:
-        """Needs to happen because positive y-direction of the board is
-        downwards, while the positive y-direction in a polyomino definition is
-        upwards.
+        """Needs to happen because positive y-direction of the board is downwards, while
+        the positive y-direction in a polyomino definition is upwards.
         """
         updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 
