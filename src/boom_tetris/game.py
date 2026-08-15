@@ -1,5 +1,6 @@
 """Core game loop: input, gravity, DAS, scoring, and rendering."""
 
+import math
 import os
 
 import pygame as pg
@@ -75,10 +76,10 @@ class Game:
         self.das_delay["DOWN"] = self.soft_drop_speed
         self.auto_repeat_rate["DOWN"] = self.soft_drop_speed
 
-        # ARE delay (Automatic Repeat Entry delay)
-        self.are_delay = frames2ms(self.frame_rate, self.config.GENERAL.ARE_DELAY)
+        # ARE (Entry/appearance delay after a piece locks).
         self.in_are = False
         self.are_timer = 0
+        self.are_duration = 0
 
         # Related to lines cleared and level.
         self.level = self.config.GENERAL.START_LEVEL
@@ -160,8 +161,9 @@ class Game:
                     if direction in ["LEFT", "RIGHT"]:
                         self.hold_timer[direction] = self.das_delay[direction] + 1
                     elif direction == "DOWN":
-                        self.get_next_polyomino()
+                        self.lock_polyomino()
                         self.update_key_hold(direction, is_pressed=True)
+                        return
             else:
                 self.hold_timer[direction] = 0
 
@@ -171,7 +173,7 @@ class Game:
         Args:
             event: A keyboard or other pygame event from the queue.
         """
-        if event.type == pg.KEYDOWN:
+        if event.type == pg.KEYDOWN and not self.in_are:
             # Horizontal and vertical movement.
             if event.key == KEY.LEFT:
                 self.update_key_hold("LEFT", is_pressed=True)
@@ -194,7 +196,7 @@ class Game:
                 ):
                     self.polyomino.y += self.config.DIRECTIONS.DOWN[1]
                 else:
-                    self.get_next_polyomino()
+                    self.lock_polyomino()
 
             # Rotational movement.
             if event.key == KEY.ROTATE_CLOCKWISE and not self.board.collision(
@@ -215,7 +217,7 @@ class Game:
                 ):
                     self.polyomino.y += self.config.DIRECTIONS.DOWN[1]
 
-                self.get_next_polyomino()
+                self.lock_polyomino()
 
         elif event.type == pg.KEYUP:
             if event.key == KEY.LEFT:
@@ -272,8 +274,37 @@ class Game:
         score_to_add = (level + 1) * self.score_dict[lines_cleared]
         self.score += score_to_add
 
-    def get_next_polyomino(self) -> None:
-        """Lock the piece, clear lines, update score/level, and swap pieces."""
+    def compute_are_frames(self, lock_row: int) -> int:
+        """Return the entry-delay length in frames for a given lock row.
+
+        Higher placements (small ``lock_row``) get the full delay; placements nearer the
+        floor get progressively shorter delays, down to the configured minimum.
+
+        Args:
+            lock_row (int): Bottom-most row occupied by the piece as it locked (0 =
+                top).
+
+        Returns:
+            int: Entry-delay duration in frames.
+        """
+        steps = max(
+            0,
+            math.ceil(
+                (lock_row - self.config.ARE.FIRST_THRESHOLD_ROW)
+                / self.config.ARE.ROWS_PER_STEP
+            ),
+        )
+        frames = (
+            self.config.ARE.BASE_DELAY_FRAMES - self.config.ARE.FRAMES_PER_STEP * steps
+        )
+
+        return max(frames, self.config.ARE.MIN_DELAY_FRAMES)
+
+    def lock_polyomino(self) -> None:
+        """Lock the pactive piece, clear lines, update score/level, and start ARE."""
+        # Bottom-most row of the piece sets the entry-delay length.
+        lock_row = max(self.polyomino.y + block[1] for block in self.polyomino)
+
         # Place the polyomino on the board.
         self.board.place(self.polyomino)
 
@@ -284,19 +315,20 @@ class Game:
             self.update_score(level=self.level, lines_cleared=lines_cleared)
             self.update_lines_and_level(lines_cleared=lines_cleared)
 
-        os.system("clear")
-        print(f"{self.score=}")
-        print(f"{self.line_counter=}")
-        print(f"{self.level=}")
-
         if self.level in self.config.GENERAL.NTSC_DROP_FRAMES:
             self.drop_interval = convert_drop_frames_to_time(
                 framerate=self.config.GENERAL.NTSC_FRAMERATE,
                 frames_per_cell=self.config.GENERAL.NTSC_DROP_FRAMES[self.level],
             )
 
-        self.last_drop_time = pg.time.get_ticks()
+        self.are_duration = frames2ms(
+            self.frame_rate, self.compute_are_frames(lock_row)
+        )
+        self.in_are = True
+        self.are_timer = 0
 
+    def spawn_next_polyomino(self) -> None:
+        """Activate the previewed piece and create a new preview piece."""
         self.next_polyomino.x, self.next_polyomino.y = (
             self.config.POLYOMINO.SPAWN_POSITION[0],
             self.config.POLYOMINO.SPAWN_POSITION[1],
@@ -306,6 +338,8 @@ class Game:
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[0],
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[1],
         )
+
+        self.last_drop_time = pg.time.get_ticks()
 
     def handle_timers(self) -> None:
         """Move the piece down on each drop tick unless soft-dropping."""
@@ -318,7 +352,7 @@ class Game:
                 ):
                     self.polyomino.y += self.config.DIRECTIONS.DOWN[1]
                 else:
-                    self.get_next_polyomino()
+                    self.lock_polyomino()
                 self.last_drop_time = current_time
 
     def update(self) -> bool:
@@ -329,7 +363,11 @@ class Game:
         """
         with self.renderer:
             self.renderer.draw_board(board=self.board)
-            self.renderer.draw_polyomino(self.polyomino, self.board.cell_rect.copy())
+
+            if not self.in_are:
+                self.renderer.draw_polyomino(
+                    self.polyomino, self.board.cell_rect.copy()
+                )
 
             self.renderer.draw_grid_lines(board=self.board)
 
@@ -392,7 +430,16 @@ class Game:
                 self.next_polyomino, self.board.cell_rect.copy()
             )
 
-        self.handle_timers()
-        self.update_das(dt=self.clock.tick(self.frame_rate))
+        dt = self.clock.tick(self.frame_rate)
+
+        if self.in_are:
+            self.are_timer += dt
+            if self.are_timer >= self.are_duration:
+                self.in_are = False
+                self.are_timer = 0
+                self.spawn_next_polyomino()
+        else:
+            self.handle_timers()
+            self.update_das(dt=self.clock.tick(self.frame_rate))
 
         return self.handle_events()

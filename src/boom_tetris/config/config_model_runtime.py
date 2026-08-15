@@ -187,6 +187,15 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         AUTO_REPEAT_RATE_NTSC: int
         AUTO_REPEAT_RATE_PAL: int
 
+    class Are(ConfiguredBaseModel):
+        """Entry/appearance delay configuration, scaled by the the lock row."""
+
+        BASE_DELAY_FRAMES: int
+        MIN_DELAY_FRAMES: int
+        FIRST_THRESHOLD_ROW: int
+        ROWS_PER_STEP: int
+        FRAMES_PER_STEP: int
+
     class Score(ConfiguredBaseModel):
         """Scoring multipliers and per-line drop values."""
 
@@ -202,7 +211,6 @@ class ConfigModelRuntime(ConfiguredBaseModel):
 
         START_LEVEL: int
         SOFT_DROP_SPEED: float
-        ARE_DELAY: int
         NTSC_FRAMERATE: float
         PAL_FRAMERATE: float
         NTSC_DROP_FRAMES: dict[int, int]
@@ -215,5 +223,6 @@ class ConfigModelRuntime(ConfiguredBaseModel):
     POLYOMINO: Polyomino
     DIRECTIONS: Directions
     DAS: Das
+    ARE: Are
     SCORE: Score
     GENERAL: General

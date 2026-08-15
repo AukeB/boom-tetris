@@ -26,11 +26,11 @@ BOARD:
     HEIGHT: COMPUTED
   GRID_LINES:
     ENABLED: True
-    LINE_COLOR: [180, 180, 180]
+    LINE_COLOR: [180, 180, 180] 
     LINE_WIDTH: 1
 
 FONT:
-  SIZE_CELLS: 0.9 # Units: BOARD.CELL.HEIGHT. Font pixel size scales with the cell size.
+  SIZE_CELLS: 0.7 # Units: BOARD.CELL.HEIGHT. Font pixel size scales with the cell size.
   SIZE: COMPUTED # Units: pixels.
   COLOR: [255, 255, 255]
 
@@ -112,10 +112,18 @@ SCORE:
   SOFT_DROP_PER_LINE: 1
   HARD_DROP_PER_LINE: 1
 
+ARE:
+  # Entry/appearance delay after a piece locks, in frames. The delay is longer for
+  # pieces that lock high on the board and shorter for pieces that land near the floor.
+  BASE_DELAY_FRAMES: 18 # Max delay, applied to the highest placements.
+  MIN_DELAY_FRAMES: 10 # Floor delay, applied to the lowest placements.
+  FIRST_THRESHOLD_ROW: 6 # Lock rows at or above this (0 = top) get the full delay.
+  ROWS_PER_STEP: 4 # Every this many rows lower reduces the delay by one step.
+  FRAMES_PER_STEP: 2 # Frames removed per step.
+
 GENERAL:
   START_LEVEL: 18
   SOFT_DROP_SPEED: 0.5 # Units: Gravity. Definition of gravity: Gravity is expressed in unit G, where 1G = 1 cell per frame, and 0.1G = 1 cell per 10 frames
-  ARE_DELAY: 18
   NTSC_FRAMERATE: 60.0988
   PAL_FRAMERATE: 50.0070
   NTSC_DROP_FRAMES:

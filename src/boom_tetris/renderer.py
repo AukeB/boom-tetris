@@ -165,17 +165,23 @@ class Renderer:
     def draw_label_and_value(
         self, label: str, value: str, rect: pg.Rect, color: list[int] | None = None
     ) -> None:
-        """Stack a label above a value within a field rect.
+        """Stack a label above a value, centered as a pair within a field rect.
+
+        The label and value centeres are separated by one cell height, and the pair is
+        vertically centered on the rect.
 
         Args:
-            label (str): Field title draw centered in the top half.
-            value: Value drawn centered in the bottom half.
-            rect: Field rectangle split vertically between label and value.
+            label (str): Field title drawn above the value.
+            value: Value drawn below the label.
+            rect: Field rectangle the label/value pair is centered in.
             color: RGB text color; falls back to the configured font color.
         """
-        half_height = rect.height // 2
-        label_rect = pg.Rect(rect.left, rect.top, rect.width, half_height)
-        value_rect = pg.Rect(rect.left, rect.top + half_height, rect.width, half_height)
+        cell_height = self.config.BOARD.CELL.HEIGHT
+
+        label_rect = pg.Rect(0, 0, rect.width, cell_height)
+        value_rect = pg.Rect(0, 0, rect.width, cell_height)
+        label_rect.center = (rect.centerx, round(rect.centery - cell_height))
+        value_rect.center = (rect.centerx, round(label_rect.centery + cell_height))
 
         self.draw_text(text=label, rect=label_rect, color=color)
         self.draw_text(text=value, rect=value_rect, color=color)
