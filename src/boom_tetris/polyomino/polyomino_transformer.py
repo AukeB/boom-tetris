@@ -38,7 +38,8 @@ class PolyominoTransformer:
         """Load per-shape metadata for size 4; otherwise return an empty map.
 
         Returns:
-            Mapping from canonical cell-tuple keys to property ``DotDict``s.
+            dict[tuple[tuple[int, int], ...], DotDict]: Mapping from canonical cell-
+                tuple keys to property ``DotDict``s.
         """
         if self.polyomino_size == 3:
             with open(TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH, "r") as file:
@@ -169,8 +170,8 @@ class PolyominoTransformer:
         """Run the full transform pipeline for tetrominoes; else return shapes.
 
         Returns:
-            For size 4, ``(polyominos, mapping)``; otherwise ``polyominos``
-            alone.
+            tuple | list: For size 4, ``(polyominos, mapping)``; otherwise
+                ``polyominos`` alone.
         """
         if self.polyomino_size in [3, 4]:
             self._rotate()

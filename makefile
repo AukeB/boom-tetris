@@ -8,7 +8,7 @@ ruff:
 	@echo "🔧 Successfully executed ruff."
 
 docstring:
-	uv run docstring_tailor $(PROJECT_NAME)
+	uv run docstring_tailor format $(PROJECT_NAME)
 	@echo "🔧 Successfully executed docstring_tailor."
 
 # Static type-check code with ty

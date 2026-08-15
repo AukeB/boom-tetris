@@ -55,7 +55,7 @@ class PolyominoGenerator:
             polyomino_shape: Occupied cells as a tuple of ``(x, y)`` integer pairs.
 
         Returns:
-            A sorted tuple of ``(x, y)`` pairs with min-x = 0 and min-y = 0.
+            tuple: A sorted tuple of ``(x, y)`` pairs with min-x = 0 and min-y = 0.
         """
         x_min = min(x for x, _ in polyomino_shape)
         y_min = min(y for _, y in polyomino_shape)
@@ -76,7 +76,7 @@ class PolyominoGenerator:
             polyomino_shape: A normalised, sorted tuple of ``(x, y)`` cell pairs.
 
         Returns:
-            A tuple of rotated ``(x, y)`` cell pairs.
+            tuple: A tuple of rotated ``(x, y)`` cell pairs.
         """
         rotated_shape = tuple((y, -x) for x, y in polyomino_shape)
 
@@ -99,7 +99,8 @@ class PolyominoGenerator:
             polyomino_shape: Occupied cells as a normalised tuple of ``(x, y)`` pairs.
 
         Returns:
-            A list of four normalised cell tuples, one per 90° rotation step.
+            list[tuple]: A list of four normalised cell tuples, one per 90° rotation
+                step.
         """
         rotations: list[tuple[Cell, ...]] = []
         current_shape = polyomino_shape
@@ -134,8 +135,8 @@ class PolyominoGenerator:
                 to a single cell at the origin to start the search.
 
         Returns:
-            The set of all distinct polyominoes as canonical sorted tuples,
-            accumulated across the full recursion.
+            set[tuple]: The set of all distinct polyominoes as canonical sorted tuples,
+                accumulated across the full recursion.
         """
         number_of_cells = len(polyomino_shape)
 

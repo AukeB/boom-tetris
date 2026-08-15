@@ -15,6 +15,9 @@ TETROMINO_PROPERTIES_RELATIVE_FILE_PATH = Path(
     "src/boom_tetris/configs/tetromino_properties.json"
 )
 
+# Font assets path
+FONT_RELATIVE_FILE_PATH = Path("src/boom_tetris/assets/fonts/8-bit-pusab.ttf")
+
 
 """`Dimensions` refers to the structural properties of a grid, matrix, or layout,
 specifying the number of columns and rows into which the grid is partitioned.

@@ -108,12 +108,13 @@ class Game:
         """Build line-clear score multipliers for 1–4 rows at once.
 
         Returns:
-            Map from cleared line count to base points before level scaling.
+            dict[int, int]: Map from cleared line count to base points before level
+                scaling.
         """
         single_points = self.config.SCORE.SINGLE
-        double_points = single_points * self.config.SCORE.DOUBLE_MULTIPLIER
-        triple_points = double_points * self.config.SCORE.TRIPLE_MULTIPLIER
-        tetris_points = triple_points * self.config.SCORE.TETRIS_MULTIPLIER
+        double_points = int(single_points * self.config.SCORE.DOUBLE_MULTIPLIER)
+        triple_points = int(double_points * self.config.SCORE.TRIPLE_MULTIPLIER)
+        tetris_points = int(triple_points * self.config.SCORE.TETRIS_MULTIPLIER)
 
         score_dict = {
             1: single_points,
@@ -228,7 +229,7 @@ class Game:
         """Drain the event queue; return False when the user quits.
 
         Returns:
-            False if the window should close; True to keep running.
+            bool: False if the window should close; True to keep running.
         """
         for event in pg.event.get():
             if (
@@ -324,7 +325,7 @@ class Game:
         """Render one frame, run timers and DAS, then process pygame events.
 
         Returns:
-            False when ``handle_events`` reports quit; True otherwise.
+            bool: False when ``handle_events`` reports quit; True otherwise.
         """
         with self.renderer:
             self.renderer.draw_board(board=self.board)
@@ -335,23 +336,56 @@ class Game:
             self.renderer.draw_rect(
                 rect=self.board.hidden_rows_rect, color=self.window_background_color
             )
+
+            # Line counter related.
             self.renderer.draw_rect(
                 rect=self.board.line_counter_rect, color=self.board_background_color
             )
+            self.renderer.draw_text(
+                text=f"{self.config.FIELDS.LINE_COUNTER.LABEL} - {self.line_counter:03d}",
+                rect=self.board.line_counter_rect,
+            )
+
+            # Score related.
             self.renderer.draw_rect(
                 rect=self.board.score_rect, color=self.board_background_color
             )
+            self.renderer.draw_label_and_value(
+                label=self.config.FIELDS.SCORE.LABEL,
+                value=f"{self.score:06d}",
+                rect=self.board.score_rect,
+            )
+
+            # Next related.
             self.renderer.draw_rect(
                 rect=self.board.next_rect, color=self.board_background_color
             )
+
+            # Level related.
             self.renderer.draw_rect(
                 rect=self.board.level_rect, color=self.board_background_color
             )
+            self.renderer.draw_label_and_value(
+                label=self.config.FIELDS.LEVEL.LABEL,
+                value=str(self.level),
+                rect=self.board.level_rect,
+            )
+
+            # Type related.
             self.renderer.draw_rect(
                 rect=self.board.type_rect, color=self.board_background_color
             )
+            self.renderer.draw_text(
+                text=self.config.FIELDS.TYPE.LABEL, rect=self.board.type_rect
+            )
+
+            # Statistics related.
             self.renderer.draw_rect(
                 rect=self.board.statistics_rect, color=self.board_background_color
+            )
+            self.renderer.draw_text(
+                text=self.config.FIELDS.STATISTICS.LABEL,
+                rect=self.board.statistics_rect,
             )
 
             self.renderer.draw_polyomino(

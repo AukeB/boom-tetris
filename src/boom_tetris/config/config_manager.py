@@ -24,15 +24,17 @@ yaml.indent(mapping=2, sequence=4, offset=2)
 class ConfigManager:
     """High-level configuration I/O and update pipeline for Boom Tetris.
 
-    Responsibilities: - Load configuration files from disk. - Compute derived runtime
-    parameters (board dimensions, polyomino shapes, etc.). - Serialize updated
-    configuration to disk for runtime use.
+    Responsibilities
+    - Load configuration files from disk.
+    - Compute derived runtime parameters (board dimensions, polyomino shapes, etc.).
+    - Serialize updated configuration to disk for runtime use.
 
-    Key Concepts: - `config_source`: The editable, authoritative configuration loaded
-    from the source YAML file (`CONFIG_SOURCE_FILE_PATH`). Validated against
-    `ConfigModelSource`. - `config_runtime`: The derived runtime configuration validated
-    against `ConfigModelRuntime`, including computed fields required for the game to
-    run. NOT edited manually.
+    Key Concepts
+    - `config_source`: The editable, authoritative configuration loaded from the source
+      YAML file (`CONFIG_SOURCE_FILE_PATH`). Validated against `ConfigModelSource`.
+    - `config_runtime`: The derived runtime configuration validated against
+      `ConfigModelRuntime`, including computed fields required for the game to run. NOT
+      edited manually.
 
     Workflow: The main workflow of this class is executed via the `get_runtime_config`
     method.
@@ -82,8 +84,8 @@ class ConfigManager:
         `ConfigModelSource`.
 
         Returns:
-            ConfigModelSource: A validated configuration model representing
-            the editable source configuration.
+            ConfigModelSource: A validated configuration model representing the editable
+                source configuration.
 
         Notes:
             This is the “authoritative” config that you can edit manually
@@ -121,7 +123,7 @@ class ConfigManager:
             config: Mutable dot-config with a WINDOW section.
 
         Returns:
-            Same config with WINDOW.WIDTH and WINDOW.HEIGHT populated.
+            DotDict: Same config with WINDOW.WIDTH and WINDOW.HEIGHT populated.
         """
         window_width, window_height = get_window_size_from_screen_resolution()
 
@@ -143,25 +145,21 @@ class ConfigManager:
         space after accounting for UI elements. This works because all dimensions scale
         linearly, so the ratios remain correct regardless of the initial values.
 
-        The four phases are:
-        - Initial: base dimensions from window size and margin.
-        - Hidden rows: rescale so that hidden rows sit above the visible area, allowing
-          pieces to rotate at spawn without being visible.
-        - Line counter: rescale again to reserve space for the line counter field above
-          the board, maintaining square cells throughout.
-        - Snap: round cell size to the nearest integer pixel, then recompute all
-          dependent dimensions from that snapped value. This is required because
-          pygame's Rect silently truncates float dimensions to integers on construction,
-          which causes sub-pixel gaps to accumulate across rows and columns during
-          rendering.
+        The four phases are: - Initial: base dimensions from window size and margin. -
+        Hidden rows: rescale so that hidden rows sit above the visible area, allowing
+        pieces to rotate at spawn without being visible. - Line counter: rescale again
+        to reserve space for the line counter field above the board, maintaining square
+        cells throughout. - Snap: round cell size to the nearest integer pixel, then
+        recompute all dependent dimensions from that snapped value. This is required
+        because pygame's Rect silently truncates float dimensions to integers on
+        construction, which causes sub-pixel gaps to accumulate across rows and columns
+        during rendering.
 
-        Args:
-            config: DotDict containing window and board configuration, including
-                dimensions, margin ratio, and polyomino settings.
+        Args: config: DotDict containing window and board configuration, including
+        dimensions, margin ratio, and polyomino settings.
 
-        Returns:
-            The same config object with computed layout parameters added, including
-                board rect, cell size, margin, and spawn positions.
+        Returns: DotDict: The same config object with computed layout parameters added,
+        including # board rect, cell size, margin, and spawn positions. #
         """
         # Computations.
 
@@ -264,7 +262,7 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            Same config with SCORE pixel geometry populated.
+            DotDict: Same config with SCORE pixel geometry populated.
         """
         config.FIELDS.SCORE.LEFT = (
             config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
@@ -294,7 +292,7 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            Same config with NEXT pixel geometry populated.
+            DotDict: Same config with NEXT pixel geometry populated.
         """
         next_height = config.FIELDS.NEXT.HEIGHT_CELLS * config.BOARD.CELL.HEIGHT
 
@@ -325,7 +323,7 @@ class ConfigManager:
             config: Mutable dot-config with snapped board and next field geometry.
 
         Returns:
-            Same config with LEVEL pixel geometry populated.
+            DotDict: Same config with LEVEL pixel geometry populated.
         """
         config.FIELDS.LEVEL.LEFT = (
             config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
@@ -356,7 +354,7 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            Same config with STATISTICS pixel geometry populated.
+            DotDict: Same config with STATISTICS pixel geometry populated.
         """
         statistics_width = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.STATISTICS.WIDTH_CELLS
@@ -391,7 +389,7 @@ class ConfigManager:
                 geometry.
 
         Returns:
-            Same config with TYPE pixel geometry populated.
+            DotDict: Same config with TYPE pixel geometry populated.
         """
         type_width = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.WIDTH_CELLS
         type_height = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.HEIGHT_CELLS
@@ -426,7 +424,7 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            Same config with all remaining field pixel geometries populated.
+            DotDict: Same config with all remaining field pixel geometries populated.
         """
         updated_config = self._add_score_field(config=config)
         updated_config = self._add_next_field(config=updated_config)
@@ -435,6 +433,19 @@ class ConfigManager:
         updated_config = self._add_type_field(config=updated_config)
 
         return updated_config
+
+    def _add_font(self, config: DotDict) -> DotDict:
+        """Compute the font pixel size from the cell height.
+
+        Args:
+            config: Mutable doc-config with snapped cell geometry.
+
+        Returns:
+            DotDict: Same config with FONT.SIZE populated in pixels.
+        """
+        config.FONT.SIZE = int(config.FONT.SIZE_CELLS * config.BOARD.CELL.HEIGHT)
+
+        return config
 
     def _add_polyomino_spawn_positions(self, config: DotDict) -> DotDict:
         """Compute and store polyomino spawn positions in grid coordinates.
@@ -446,7 +457,7 @@ class ConfigManager:
             config: Mutable dot-config with snapped board dimensions.
 
         Returns:
-            Same config with SPAWN_POSITION and SPAWN_POSITION_NEXT populated.
+            DotDict: Same config with SPAWN_POSITION and SPAWN_POSITION_NEXT populated.
         """
         # Add other parameters.
         config.POLYOMINO.SPAWN_POSITION = [
@@ -469,7 +480,7 @@ class ConfigManager:
             config: Mutable dot-config with ``POLYOMINO.SIZE`` and directions.
 
         Returns:
-            Same ``config`` with ``POLYOMINO.ALL_SHAPES`` populated.
+            DotDict: Same ``config`` with ``POLYOMINO.ALL_SHAPES`` populated.
         """
         # Exclude `rotations` from `directions`.
         directions = {
@@ -497,7 +508,7 @@ class ConfigManager:
             config: Validated model loaded after update.
 
         Returns:
-            A copy with updated ``DIRECTIONS`` field types.
+            ConfigModelRuntime: A copy with updated ``DIRECTIONS`` field types.
         """
         new_directions = config.DIRECTIONS.model_copy(
             update={
@@ -532,7 +543,8 @@ class ConfigManager:
             config: Base validated model from the main config file.ConfigModelRuntime
 
         Returns:
-            Final ``ConfigModel`` ready for the game (with ``Position`` dirs).
+            ConfigModelRuntime: Final ``ConfigModel`` ready for the game (with
+                ``Position`` dirs).
         """
         # Load and validate source configuration file.
         config_source = self._load_source_config()
@@ -545,6 +557,7 @@ class ConfigManager:
         updated_config = self._add_window_resolution(config=config_source)
         updated_config = self._add_board_and_line_counter_fields(config=updated_config)
         updated_config = self._add_all_remaining_fields(config=updated_config)
+        updated_config = self._add_font(config=updated_config)
         updated_config = self._add_polyomino_spawn_positions(config=updated_config)
         updated_config = self._add_all_polyonomios(config=updated_config)
 

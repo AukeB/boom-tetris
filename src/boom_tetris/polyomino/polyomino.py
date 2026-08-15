@@ -61,7 +61,7 @@ class Polyomino:
             direction: Rotation delta; ``0`` means no change.
 
         Returns:
-            List of ``(x, y)`` block offsets for that orientation.
+            list[tuple]: List of ``(x, y)`` block offsets for that orientation.
         """
         if direction == 0:
             return self.blocks
@@ -81,6 +81,6 @@ class Polyomino:
         """Iterate over the current block offset list.
 
         Yields:
-            Each ``(dx, dy)`` cell relative to the piece origin.
+            iter: Each ``(dx, dy)`` cell relative to the piece origin.
         """
         return iter(self.blocks)

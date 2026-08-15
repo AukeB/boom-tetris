@@ -6,7 +6,7 @@ import pygame as pg
 
 from src.boom_tetris.board import Board
 from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.constants import Position
+from src.boom_tetris.constants import FONT_RELATIVE_FILE_PATH, Position
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 
@@ -31,6 +31,7 @@ class Renderer:
         self._initialize_window()
 
         self.surface = pg.display.get_surface()
+        self.font = pg.font.Font(str(FONT_RELATIVE_FILE_PATH), self.config.FONT.SIZE)
 
     def __enter__(self) -> None:
         """Clear the framebuffer to the window background color."""
@@ -70,7 +71,7 @@ class Renderer:
 
         cell = board.cell_rect.copy()
 
-        # Draw the place pieces in the board.
+        # Draw the placed pieces in the board.
         for row, col in board:
             if board.cells[row][col]:
                 cell.y = board.rect.y + board.cell_rect.height * row
@@ -144,3 +145,37 @@ class Renderer:
             color=color,
             rect=rect,
         )
+
+    def draw_text(
+        self, text: str, rect: pg.Rect, color: list[int] | None = None
+    ) -> None:
+        """Render text centered within a field rect.
+
+        Args:
+            text (str): String to render.
+            rect (pg.Rect): Field rectangle the text is centered in.
+            color: RGB text color; falls back to the configured font color.
+        """
+        resolved_color = color or self.config.FONT.COLOR
+
+        text_surface = self.font.render(text, True, resolved_color)
+        text_rect = text_surface.get_rect(center=rect.center)
+        self.surface.blit(text_surface, text_rect)
+
+    def draw_label_and_value(
+        self, label: str, value: str, rect: pg.Rect, color: list[int] | None = None
+    ) -> None:
+        """Stack a label above a value within a field rect.
+
+        Args:
+            label (str): Field title draw centered in the top half.
+            value: Value drawn centered in the bottom half.
+            rect: Field rectangle split vertically between label and value.
+            color: RGB text color; falls back to the configured font color.
+        """
+        half_height = rect.height // 2
+        label_rect = pg.Rect(rect.left, rect.top, rect.width, half_height)
+        value_rect = pg.Rect(rect.left, rect.top + half_height, rect.width, half_height)
+
+        self.draw_text(text=label, rect=label_rect, color=color)
+        self.draw_text(text=value, rect=value_rect, color=color)

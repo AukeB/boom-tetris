@@ -16,7 +16,8 @@ def format_for_writing_to_yaml_file(
         path: Key path from the root for special cases (e.g. ALL_SHAPES).
 
     Returns:
-        ``CommentedMap``, ``CommentedSeq``, or the original scalar.
+        Union[CommentedMap, CommentedSeq, Any]: ``CommentedMap``, ``CommentedSeq``, or
+            the original scalar.
     """
     path = path or []
 
@@ -77,7 +78,7 @@ class DotDict(dict[Any, Any]):
             attr: Key name.
 
         Returns:
-            The stored value.
+            Any: The stored value.
 
         Raises:
             AttributeError: If the key is missing.
@@ -117,7 +118,7 @@ class DotDict(dict[Any, Any]):
             value: Arbitrary nested structure.
 
         Returns:
-            Wrapped structure or the original scalar.
+            Any: Wrapped structure or the original scalar.
         """
         if isinstance(value, dict):
             return DotDict(value)
@@ -130,7 +131,7 @@ class DotDict(dict[Any, Any]):
         """Convert this tree to plain dicts and lists (no ``DotDict`` nodes).
 
         Returns:
-            A JSON-serializable plain ``dict`` representation.
+            dict: A JSON-serializable plain ``dict`` representation.
         """
         result: dict[Any, Any] = {}
 

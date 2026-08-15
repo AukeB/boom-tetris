@@ -78,12 +78,20 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         CELL: Cell
         GRID_LINES: GridLines
 
+    class Font(ConfiguredBaseModel):
+        """Font sizing and color for on-screen text."""
+
+        SIZE_CELLS: float
+        SIZE: int
+        COLOR: list[UInt8]
+
     class Fields(ConfiguredBaseModel):
         """Defines all fields besides the Board (The fields where Tetris is played)."""
 
         class LineCounter(ConfiguredBaseModel):
             """Defines the size and position of the 'LineCounter' field."""
 
+            LABEL: str
             HEIGHT_CELLS: int
             LEFT: int
             TOP: int
@@ -93,6 +101,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         class Score(ConfiguredBaseModel):
             """Defines the size an position of the 'Score' field."""
 
+            LABEL: str
             HEIGHT_CELLS: int
             WIDTH_CELLS: int
             LEFT: int
@@ -113,6 +122,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         class Level(ConfiguredBaseModel):
             """Defines the size an position of the 'Level' field."""
 
+            LABEL: str
             HEIGHT_CELLS: int
             WIDTH_CELLS: int
             LEFT: int
@@ -123,6 +133,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         class Statistics(ConfiguredBaseModel):
             """Defines the size an position of the 'Statistics' field."""
 
+            LABEL: str
             HEIGHT_CELLS: int
             WIDTH_CELLS: int
             LEFT: int
@@ -133,6 +144,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
         class Type(ConfiguredBaseModel):
             """Defines the size an position of the 'Type' field."""
 
+            LABEL: str
             HEIGHT_CELLS: int
             WIDTH_CELLS: int
             LEFT: int
@@ -198,6 +210,7 @@ class ConfigModelRuntime(ConfiguredBaseModel):
 
     WINDOW: Window
     BOARD: Board
+    FONT: Font
     FIELDS: Fields
     POLYOMINO: Polyomino
     DIRECTIONS: Directions

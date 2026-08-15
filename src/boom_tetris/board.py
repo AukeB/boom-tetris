@@ -116,7 +116,7 @@ class Board:
             rotate_direction: Rotation index or delta passed to the piece.
 
         Returns:
-            True if any occupied cell would be illegal after the move.
+            bool: True if any occupied cell would be illegal after the move.
         """
         for block in polyomino.get_rotation(rotate_direction):
             boundary_position = Position(
@@ -152,7 +152,7 @@ class Board:
         """Remove full rows, shift cells down, and count cleared lines.
 
         Returns:
-            Number of rows removed this call.
+            int: Number of rows removed this call.
         """
         lines_cleared = 0
 
@@ -168,7 +168,8 @@ class Board:
         """Yield ``(row, col)`` indices for every cell in row-major order.
 
         Yields:
-            Row and column indices from ``(0,0)`` through the board extent.
+            Iterator[tuple[int, int]]: Row and column indices from ``(0,0)`` through the
+                board extent.
         """
         return itertools.product(
             range(self.dimensions.rows), range(self.dimensions.cols)
