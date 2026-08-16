@@ -109,8 +109,8 @@ class Game:
         """Build line-clear score multipliers for 1–4 rows at once.
 
         Returns:
-            dict[int, int]: Map from cleared line count to base points before level
-                scaling.
+            dict[int, int]: Map from cleared line count to base points before
+                level scaling.
         """
         single_points = self.config.SCORE.SINGLE
         double_points = int(single_points * self.config.SCORE.DOUBLE_MULTIPLIER)
@@ -277,12 +277,13 @@ class Game:
     def compute_are_frames(self, lock_row: int) -> int:
         """Return the entry-delay length in frames for a given lock row.
 
-        Higher placements (small ``lock_row``) get the full delay; placements nearer the
-        floor get progressively shorter delays, down to the configured minimum.
+        Higher placements (small ``lock_row``) get the full delay; placements
+        nearer the floor get progressively shorter delays, down to the
+        configured minimum.
 
         Args:
-            lock_row (int): Bottom-most row occupied by the piece as it locked (0 =
-                top).
+            lock_row (int): Bottom-most row occupied by the piece as it locked
+                (0 = top).
 
         Returns:
             int: Entry-delay duration in frames.
@@ -301,7 +302,9 @@ class Game:
         return max(frames, self.config.ARE.MIN_DELAY_FRAMES)
 
     def lock_polyomino(self) -> None:
-        """Lock the pactive piece, clear lines, update score/level, and start ARE."""
+        """Lock the pactive piece, clear lines, update score/level, and start
+        ARE.
+        """
         # Bottom-most row of the piece sets the entry-delay length.
         lock_row = max(self.polyomino.y + block[1] for block in self.polyomino)
 

@@ -16,8 +16,8 @@ def format_for_writing_to_yaml_file(
         path: Key path from the root for special cases (e.g. ALL_SHAPES).
 
     Returns:
-        Union[CommentedMap, CommentedSeq, Any]: ``CommentedMap``, ``CommentedSeq``, or
-            the original scalar.
+        Union[CommentedMap, CommentedSeq, Any]: ``CommentedMap``,
+            ``CommentedSeq``, or the original scalar.
     """
     path = path or []
 

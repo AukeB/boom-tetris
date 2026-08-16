@@ -24,7 +24,7 @@ select = [
 ]
 
 [tool.docstring_tailor]
-line-length = 88
+line-length = 80
 style = "google"
 
 [tool.ruff.lint.isort]

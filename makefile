@@ -7,7 +7,7 @@ ruff:
 	uv run ruff format $(PROJECT_NAME)
 	@echo "🔧 Successfully executed ruff."
 
-docstring:
+format-docstrings:
 	uv run docstring_tailor format $(PROJECT_NAME)
 	@echo "🔧 Successfully executed docstring_tailor."
 
@@ -39,7 +39,7 @@ git:
 # Run full workflow: format, type-check, test, clean, commit
 all:
 	make ruff
-	make docstring
+	make format-docstrings
 	# make ty
 	make clean
 	make git

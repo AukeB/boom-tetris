@@ -88,7 +88,8 @@ class Renderer:
 
         Args:
             polyomino: Piece with grid offset and block list.
-            block_rect: Prototype rect (size matches one cell); mutated while drawing.
+            block_rect: Prototype rect (size matches one cell); mutated while
+                drawing.
         """
         polyomino_position = Position(
             x=block_rect.x + polyomino.x * block_rect.width,
@@ -167,8 +168,8 @@ class Renderer:
     ) -> None:
         """Stack a label above a value, centered as a pair within a field rect.
 
-        The label and value centeres are separated by one cell height, and the pair is
-        vertically centered on the rect.
+        The label and value centeres are separated by one cell height, and the
+        pair is vertically centered on the rect.
 
         Args:
             label (str): Field title drawn above the value.

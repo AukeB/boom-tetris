@@ -38,8 +38,8 @@ class PolyominoTransformer:
         """Load per-shape metadata for size 4; otherwise return an empty map.
 
         Returns:
-            dict[tuple[tuple[int, int], ...], DotDict]: Mapping from canonical cell-
-                tuple keys to property ``DotDict``s.
+            dict[tuple[tuple[int, int], ...], DotDict]: Mapping from canonical
+                cell- tuple keys to property ``DotDict``s.
         """
         if self.polyomino_size == 3:
             with open(TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH, "r") as file:
@@ -142,8 +142,9 @@ class PolyominoTransformer:
         self._sort()
 
     def _mirror_horizontally(self) -> None:
-        """Needs to happen because positive y-direction of the board is downwards, while
-        the positive y-direction in a polyomino definition is upwards.
+        """Needs to happen because positive y-direction of the board is
+        downwards, while the positive y-direction in a polyomino definition is
+        upwards.
         """
         updated_polyomino_mapping: dict[tuple[tuple[int, int], ...], DotDict] = {}
 

@@ -168,8 +168,8 @@ class Board:
         """Yield ``(row, col)`` indices for every cell in row-major order.
 
         Yields:
-            Iterator[tuple[int, int]]: Row and column indices from ``(0,0)`` through the
-                board extent.
+            Iterator[tuple[int, int]]: Row and column indices from ``(0,0)``
+                through the board extent.
         """
         return itertools.product(
             range(self.dimensions.rows), range(self.dimensions.cols)
