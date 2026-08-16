@@ -6,7 +6,7 @@ import pygame as pg
 
 from src.boom_tetris.board import Board
 from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.constants import FONT_RELATIVE_FILE_PATH, Position
+from src.boom_tetris.constants import FONT_FILE_PATH, Position
 from src.boom_tetris.polyomino.polyomino import Polyomino
 from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 
@@ -31,7 +31,7 @@ class Renderer:
         self._initialize_window()
 
         self.surface = pg.display.get_surface()
-        self.font = pg.font.Font(str(FONT_RELATIVE_FILE_PATH), self.config.FONT.SIZE)
+        self.font = pg.font.Font(str(FONT_FILE_PATH), self.config.FONT.SIZE)
 
     def __enter__(self) -> None:
         """Clear the framebuffer to the window background color."""

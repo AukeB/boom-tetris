@@ -8,15 +8,13 @@ CONFIG_SOURCE_FILE_PATH = Path("src/boom_tetris/configs/config_source.yaml")
 CONFIG_RUNTIME_FILE_PATH = Path("src/boom_tetris/configs/config_runtime.yaml")
 
 # Polyomino properpties paths.
-TRIOMINO_PROPERTIES_RELATIVE_FILE_PATH = Path(
-    "src/boom_tetris/configs/triomino_properties.json"
-)
-TETROMINO_PROPERTIES_RELATIVE_FILE_PATH = Path(
+TRIOMINO_PROPERTIES_FILE_PATH = Path("src/boom_tetris/configs/triomino_properties.json")
+TETROMINO_PROPERTIES_FILE_PATH = Path(
     "src/boom_tetris/configs/tetromino_properties.json"
 )
 
 # Font assets path
-FONT_RELATIVE_FILE_PATH = Path("src/boom_tetris/assets/fonts/8-bit-pusab.ttf")
+FONT_FILE_PATH = Path("src/boom_tetris/assets/fonts/8-bit-pusab.ttf")
 
 
 """`Dimensions` refers to the structural properties of a grid, matrix, or
