@@ -17,19 +17,28 @@ ALL_POLYOMINOS, POLYOMINO_MAPPING = polyomino_transformer.execute()
 class Polyomino:
     """One active piece with grid position, blocks, and rotation metadata."""
 
-    def __init__(self, x: int, y: int) -> None:
-        """Pick a random shape from module-level ``ALL_POLYOMINOS``.
+    def __init__(
+        self, x: int, y: int, previous_polyomino_index: int | None = None
+    ) -> None:
+        """Pick a shape using NEST-style anti-repeat RNG.
+
+        The roll draws one value beyond the piece count; landing on that spare
+        value or repeating ``previous_index`` triggers a single re-roll, which
+        halves the odds of the same piece twice in a row.
 
         Args:
             x: Initial column in board cells.
             y: Initial row in board cells.
+            previous_polyomino_index (int | None): Index of the previously
+                spanwed piece, or ``None`` for the first piece. Defaults to
+                ``None``.
         """
         self.x = x
         self.y = y
 
-        polyomino_index = rd.randint(0, len(ALL_POLYOMINOS) - 1)
+        self.index = self._roll_index(previous_polyomino_index)
 
-        self.blocks = ALL_POLYOMINOS[polyomino_index]
+        self.blocks = ALL_POLYOMINOS[self.index]
         self.properties = POLYOMINO_MAPPING[
             tuple(tuple(block) for block in self.blocks)
         ]
@@ -39,6 +48,25 @@ class Polyomino:
             self.rotation_index = 0
             self.rotations = self.properties.rotations
             self.blocks = self.rotations[self.rotation_index]
+
+    @staticmethod
+    def _roll_index(previous_polyomino_index: int | None) -> int:
+        """Return a piece index using the NES anti-repeat re-roll rule.
+
+        Args:
+            previous_index (int | None): Index of the previous piece, or
+                ``None`` to skip the repeat check.
+
+        Returns:
+            int: Index into ``ALL_POLYOMINOS`` for the new piece.
+        """
+        count = len(ALL_POLYOMINOS)
+        roll = rd.randint(0, count)
+
+        if roll == count or roll == previous_polyomino_index:
+            roll = rd.randint(0, count - 1)
+
+        return roll
 
     def rotate(self, direction: int) -> None:
         """Advance rotation for predefined types or recompute block coordinates.

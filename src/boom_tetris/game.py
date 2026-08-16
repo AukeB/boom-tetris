@@ -49,6 +49,7 @@ class Game:
         self.next_polyomino = Polyomino(
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[0],
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[1],
+            previous_polyomino_index=self.polyomino.index,
         )
 
         # Related to DAS (Delayed Auto Shift).
@@ -371,6 +372,7 @@ class Game:
         self.next_polyomino = Polyomino(
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[0],
             self.config.POLYOMINO.SPAWN_POSITION_NEXT[1],
+            previous_polyomino_index=self.polyomino.index,
         )
 
         self.last_drop_time = pg.time.get_ticks()
