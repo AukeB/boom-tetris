@@ -18,6 +18,7 @@ This is an overview of **what** is left, not how to do it. Tick a box (`[x]`) wh
 
 ## Core gameplay still missing
 - [x] Correct piece RNG — NES-style anti-repeat reroll (currently a uniformly random shape, no reroll)
+- [ ] Initial delay for the first piece. When the first piece spawns, it should for about 1-2 seconds there, before falling.
 - [ ] Game-over detection and handling (no top-out check yet)
 - [ ] Pause game
 - [ ] Soft-drop and hard-drop points added to score (config values exist but are unused)
