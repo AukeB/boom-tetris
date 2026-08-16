@@ -20,7 +20,7 @@ dev = [
 [tool.ruff.lint]
 select = [
     "I",    # isort-style import sorting
-    #"ANN",  # annotation rules
+    # "ANN",  # annotation rules
 ]
 
 [tool.docstring_tailor]

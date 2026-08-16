@@ -3,6 +3,10 @@
 Features present in the old `Tetris/` repo but not yet ported to `boom-tetris/`.
 This is an overview of **what** is left, not how to do it. Tick a box (`[x]`) when done.
 
+## Linting, formatting, parsing etc. issues
+- [ ] Fix all ruff issues with the ANN tag turned on
+- [ ] Fix all remaining ty issues, I think only in game.py and in boards.py
+
 ## Already working in the new repo (for reference)
 - [x] Board, gravity, line clears
 - [x] Scoring for line clears + level progression
