@@ -1,6 +1,7 @@
 TODO:
 
 - Main functionalities
+    - ARE (check if currently correct w.r.t place height, or maybe should be the other way around.)
     - DAS
     - Pause game
 - Main layout

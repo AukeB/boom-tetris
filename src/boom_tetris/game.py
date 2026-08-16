@@ -167,30 +167,60 @@ class Game:
             else:
                 self.hold_timer[direction] = 0
 
+    def charge_das(self, dt: int) -> None:
+        """Charge horizontal DAS while a key is held during ARE, without moving
+
+        Mirrors NES behaviour: holding left/right through the entry delay lets
+        the next piece auto-shift the instant it appears.
+
+        Args:
+            dt (int): Milliseconds since the last tick for timer accumulation.
+        """
+        for direction in self.das_directions:
+            if direction == "DOWN":
+                continue
+            if self.key_pressed[direction]:
+                self.hold_timer[direction] = min(
+                    self.hold_timer[direction] + dt, self.das_delay[direction] + 1
+                )
+            else:
+                self.hold_timer[direction] = 0
+
     def handle_controls(self, event: pg.event.Event) -> None:
         """React to one pygame input event (move, rotate, hard drop).
 
+        Key state is always tracked so DAS keeps charging during ARE; piece
+        actions only apply once the next piece has appeared.
+
         Args:
-            event: A keyboard or other pygame event from the queue.
+            event (pg.event.Event): A keyboard or other pygame event from the
+                queue.
         """
-        if event.type == pg.KEYDOWN and not self.in_are:
-            # Horizontal and vertical movement.
+        if event.type == pg.KEYDOWN:
+            # Always track held movement keys so DAS charges, even during ARE.
             if event.key == KEY.LEFT:
                 self.update_key_hold("LEFT", is_pressed=True)
-                if not self.board.collision(
-                    self.polyomino, move_direction=self.config.DIRECTIONS.LEFT
-                ):
-                    self.polyomino.x += self.config.DIRECTIONS.LEFT[0]
-
-            if event.key == KEY.RIGHT:
+            elif event.key == KEY.RIGHT:
                 self.update_key_hold("RIGHT", is_pressed=True)
-                if not self.board.collision(
-                    self.polyomino, move_direction=self.config.DIRECTIONS.RIGHT
-                ):
-                    self.polyomino.x += self.config.DIRECTIONS.RIGHT[0]
+            elif event.key == KEY.DOWN:
+                self.update_key_hold("DOWN", is_pressed=True)
+
+            # No controllable piece exists during the entry delay.
+            if self.in_are:
+                return
+
+            # Horizontal and vertical movement.
+            if event.key == KEY.LEFT and not self.board.collision(
+                self.polyomino, move_direction=self.config.DIRECTIONS.LEFT
+            ):
+                self.polyomino.x += self.config.DIRECTIONS.LEFT[0]
+
+            if event.key == KEY.RIGHT and not self.board.collision(
+                self.polyomino, move_direction=self.config.DIRECTIONS.RIGHT
+            ):
+                self.polyomino.x += self.config.DIRECTIONS.RIGHT[0]
 
             if event.key == KEY.DOWN:
-                self.update_key_hold("DOWN", is_pressed=True)
                 if not self.board.collision(
                     self.polyomino, move_direction=self.config.DIRECTIONS.DOWN
                 ):
@@ -200,7 +230,8 @@ class Game:
 
             # Rotational movement.
             if event.key == KEY.ROTATE_CLOCKWISE and not self.board.collision(
-                self.polyomino, rotate_direction=self.config.DIRECTIONS.ROTATE_CLOCKWISE
+                self.polyomino,
+                rotate_direction=self.config.DIRECTIONS.ROTATE_CLOCKWISE,
             ):
                 self.polyomino.rotate(self.config.DIRECTIONS.ROTATE_CLOCKWISE)
 
@@ -436,6 +467,7 @@ class Game:
         dt = self.clock.tick(self.frame_rate)
 
         if self.in_are:
+            self.charge_das(dt)
             self.are_timer += dt
             if self.are_timer >= self.are_duration:
                 self.in_are = False
@@ -443,6 +475,6 @@ class Game:
                 self.spawn_next_polyomino()
         else:
             self.handle_timers()
-            self.update_das(dt=self.clock.tick(self.frame_rate))
+            self.update_das(dt=dt)
 
         return self.handle_events()
