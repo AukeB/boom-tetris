@@ -148,21 +148,25 @@ class ConfigManager:
         because all dimensions scale linearly, so the ratios remain correct
         regardless of the initial values.
 
-        The four phases are: - Initial: base dimensions from window size and
-        margin. - Hidden rows: rescale so that hidden rows sit above the visible
-        area, allowing pieces to rotate at spawn without being visible. - Line
-        counter: rescale again to reserve space for the line counter field above
-        the board, maintaining square cells throughout. - Snap: round cell size
-        to the nearest integer pixel, then recompute all dependent dimensions
-        from that snapped value. This is required because pygame's Rect silently
-        truncates float dimensions to integers on construction, which causes
-        sub-pixel gaps to accumulate across rows and columns during rendering.
+        The four phases are:
+        - Initial: base dimensions from window size and margin.
+        - Hidden rows: rescale so that hidden rows sit above the visible area,
+          allowing pieces to rotate at spawn without being visible.
+        - Line counter: rescale again to reserve space for the line counter
+          field above the board, maintaining square cells throughout.
+        - Snap: round cell size to the nearest integer pixel, then recompute all
+          dependent dimensions from that snapped value. This is required because
+          pygame's Rect silently truncates float dimensions to integers on
+          construction, which causes sub-pixel gaps to accumulate across rows
+          and columns during rendering.
 
-        Args: config: DotDict containing window and board configuration,
-        including dimensions, margin ratio, and polyomino settings.
+        Args:
+            config: DotDict containing window and board configuration, including
+                dimensions, margin ratio, and polyomino settings.
 
-        Returns: DotDict: The same config object with computed layout parameters
-        added, including # board rect, cell size, margin, and spawn positions. #
+        Returns:
+            DotDict: The same config object with computed layout parameters
+                added.
         """
         # Computations.
 
@@ -444,7 +448,7 @@ class ConfigManager:
 
         return updated_config
 
-    def _add_font(self, config: DotDict) -> DotDict:
+    def _add_font_size(self, config: DotDict) -> DotDict:
         """Compute the font pixel size from the cell height.
 
         Args:
@@ -569,7 +573,7 @@ class ConfigManager:
         updated_config = self._add_window_resolution(config=config_source)
         updated_config = self._add_board_and_line_counter_fields(config=updated_config)
         updated_config = self._add_all_remaining_fields(config=updated_config)
-        updated_config = self._add_font(config=updated_config)
+        updated_config = self._add_font_size(config=updated_config)
         updated_config = self._add_polyomino_spawn_positions(config=updated_config)
         updated_config = self._add_all_polyonomios(config=updated_config)
 

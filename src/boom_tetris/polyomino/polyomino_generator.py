@@ -2,26 +2,38 @@
 backtracking DFS.
 
 Notes:
-    - In the case for Tetris, distinct polyominoes means rotations do not count,
-      but inversions do. For example, the L-piece and the J-piece are inversions
-      and two separate tetromino pieces. However, if you rotate an L-piece, this
+    - For Tetris, distinct polyominoes means rotations do not count, but
+      inversions do. For example, the L-piece and the J-piece are inversions and
+      two separate tetromino pieces. However, if you rotate an L-piece, this
       does not generate a 'new' tetromino.
     - If the fixed size is set to, for example, 4, then it will generate all
-      polyominoes with size 4, which are called tetrominoes.
+      polyominoes with size 4, which are called tetrominoes. If set to 5, it
+      will generate all poylominoes with size 5, which are called pentomino's.
 """
 
+# A cell is represented by coordinates in 2 dimensions.
 type Cell = tuple[int, int]
 
 
 class PolyominoGenerator:
     """Enumerate one-sided polyominoes of a fixed size using backtracking and
-    rotation- invariant deduplication.
+    rotation-invariant deduplication.
 
     A one-sided polyomino is a connected shape made of unit squares on a grid,
     where two shapes are considered identical if one can be rotated into the
     other, but mirror images are counted as distinct. This generator grows
     shapes cell-by-cell via DFS and discards any new shape whose canonical form
     matches any rotation of a shape already seen.
+
+    Attributes:
+        number_of_polyomino_cells (int): The exact number of cells each
+            polyomino must contain.
+        directions (dict[str, list[int]]): Named step vectors used to find
+            neighbouring cells on the simulated grid.
+        unique_shapes (set[tuple[Cell, ...]]): The distinct polyominoes found so
+            far. Generation happens on a simulated grid, where a polyomino is
+            represented as a tuple of ``Cell`` coordinates, so this attribute is
+            a set of such coordinate tuples.
     """
 
     def __init__(
@@ -72,7 +84,7 @@ class PolyominoGenerator:
         """Apply a single 90° counter-clockwise rotation to a shape's cells.
 
         The transformation ``(x, y) → (y, −x)`` rotates each cell around the
-        origin by 90° counter- clockwise. Calling this method four times in
+        origin by 90° counter-clockwise. Calling this method four times in
         succession returns the shape to its original orientation.
 
         Args:
