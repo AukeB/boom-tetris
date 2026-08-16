@@ -255,29 +255,27 @@ class PolyominoTransformer:
 
     def execute(
         self,
-    ) -> tuple[list[PolyominoBlocks], PolyominoMapping] | list[PolyominoBlocks]:
+    ) -> tuple[list[list[Cell]], PolyominoMapping]:
         """Run the full rotate → shift → mirror pipeline for sizes that have
         correction metadata; return other sizes unchanged.
 
         Triominoes and tetrominoes are the only sizes with hand-authored
         correction metadata (see `_load_polyomino_properties`), so only they are
         transformed into board-ready coordinates. Other sizes have no metadata
-        to apply and no mapping to return alongside them, so they pass through
-        as-is.
+        to apply, so their shapes pass through untransformed.
 
         Returns:
-            polyominos (list[PolyominoBlocks]): The corrected shapes for
-                triomino and tetromino sizes, or the untouched shapes for any
-                other size.
+            polyominos (list[list[Cell]]): The corrected shapes for polyomino
+                sizes, or the untouched shapes for any other size, with each
+                cell as un immutable `(x,y)` tuple.
             polyomino_mapping (PolyominoMapping): The corresponding correction
-                metadata. Only returned alongside `polyominos` for triomino and
-                tetromino sizes.
+                metadata, keyed by each shape's canonical cell tuple.
         """
         if self.polyomino_size in [3, 4]:
             self._rotate()
             self._shift()
             self._mirror_horizontally()
 
-            return self.polyominos, self.polyomino_mapping
+        polyominos = [[(x, y) for x, y in shape] for shape in self.polyominos]
 
-        return self.polyominos
+        return polyominos, self.polyomino_mapping

@@ -1,6 +1,7 @@
 """Falling polyomino state: random shape, rotations, and block iteration."""
 
 import random as rd
+from collections.abc import Iterator
 
 from src.boom_tetris.config.config_manager import ConfigManager
 from src.boom_tetris.constants import CONFIG_RUNTIME_FILE_PATH
@@ -39,9 +40,7 @@ class Polyomino:
         self.index = self._roll_index(previous_polyomino_index)
 
         self.blocks = ALL_POLYOMINOS[self.index]
-        self.properties = POLYOMINO_MAPPING[
-            tuple(tuple(block) for block in self.blocks)
-        ]
+        self.properties = POLYOMINO_MAPPING[tuple(self.blocks)]
         self.rotation_type = self.properties.rotation_type
 
         if self.rotation_type == "predefined":
@@ -82,14 +81,15 @@ class Polyomino:
         else:
             self.blocks = self.get_rotation(direction=direction)
 
-    def get_rotation(self, direction: int) -> list[tuple]:
+    def get_rotation(self, direction: int) -> list[tuple[int, int]]:
         """Return blocks for a rotation without mutating ``rotation_index``.
 
         Args:
             direction: Rotation delta; ``0`` means no change.
 
         Returns:
-            list[tuple]: List of ``(x, y)`` block offsets for that orientation.
+            list[tuple[int, int]]: List of ``(x, y)`` block offsets for that
+                orientation.
         """
         if direction == 0:
             return self.blocks
@@ -105,10 +105,11 @@ class Polyomino:
 
         return [(-y * direction, x * direction) for (x, y) in self.blocks]
 
-    def __iter__(self) -> None:
+    def __iter__(self) -> Iterator[tuple[int, int]]:
         """Iterate over the current block offset list.
 
-        Yields:
-            iter: Each ``(dx, dy)`` cell relative to the piece origin.
+        Returns:
+            Iterator[tuple[int, int]]: Iterator over ``(dx, dy)`` cells relative
+                to the piece origin.
         """
         return iter(self.blocks)

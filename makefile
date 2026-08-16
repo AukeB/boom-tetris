@@ -40,7 +40,7 @@ git:
 all:
 	make ruff
 	make format-docstrings
-	# make ty
+	## make ty
 	make clean
 	make git
 	@echo "⚡ Successfully executed all tasks."
