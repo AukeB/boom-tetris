@@ -23,12 +23,15 @@ dev = [
 [tool.ruff.lint]
 select = [
     "I",    # isort-style import sorting
-    # "ANN",  # annotation rules
+    "ANN",  # annotation rules
 ]
 
 [tool.docstring_tailor]
 line-length = 80
 style = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN"]  # tests are not held to annotation rules
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]

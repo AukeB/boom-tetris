@@ -6,9 +6,9 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 
 def format_for_writing_to_yaml_file(
-    obj: Union[dict[Any, Any], list[Any], Any],
+    obj: Union[dict[Any, Any], list[Any], Any],  # noqa: ANN401 (intentional: DotDict holds arbitrary YAML values)
     path: list[str | int] | None = None,
-) -> Union[CommentedMap, CommentedSeq, Any]:
+) -> Union[CommentedMap, CommentedSeq, Any]:  # noqa: ANN401 (intentional: DotDict holds arbitrary YAML values)
     """Build ruamel structures with optional path-based formatting hints.
 
     Args:
@@ -87,7 +87,7 @@ class DotDict(dict[Any, Any]):
         for key, value in data.items():
             self[key] = self._wrap(value)
 
-    def __getattr__(self, attr: str) -> Any:
+    def __getattr__(self, attr: str) -> Any:  # noqa: ANN401 (intentional: DotDict holds arbitrary YAML values)
         """Return a key as an attribute, mirroring ``dict`` lookup.
 
         Args:
@@ -107,7 +107,7 @@ class DotDict(dict[Any, Any]):
 
         return value
 
-    def _wrap(self, value: Any) -> Any:
+    def _wrap(self, value: Any) -> Any:  # noqa: ANN401 (intentional: DotDict holds arbitrary YAML values)
         """Recursively wrap dicts as ``DotDict`` and lists element-wise.
 
         Args:
@@ -128,7 +128,7 @@ class DotDict(dict[Any, Any]):
 
         return value
 
-    def __setattr__(self, key: str, value: Any) -> None:
+    def __setattr__(self, key: str, value: Any) -> None:  # noqa: ANN401 (intentional: DotDict holds arbitrary YAML values)
         """Store a value under ``key``, wrapping dicts as ``DotDict``.
 
         Args:
