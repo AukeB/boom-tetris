@@ -1,7 +1,7 @@
 """Playfield grid: collision tests, locking pieces, and line clears."""
 
 import itertools
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 
 import pygame as pg
 
@@ -105,7 +105,7 @@ class Board:
     def collision(
         self,
         polyomino: Polyomino,
-        move_direction: Position = Position(0, 0),
+        move_direction: Sequence[int] = Position(0, 0),
         rotate_direction: int = 0,
     ) -> bool:
         """Return True if the piece would overlap walls, floor, or blocks.

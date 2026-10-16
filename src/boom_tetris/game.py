@@ -58,7 +58,7 @@ class Game:
         self.das_directions = self.config.DAS.DIRECTIONS
 
         self.key_pressed = {key: False for key in self.das_directions}
-        self.hold_timer = {key: 0 for key in self.das_directions}
+        self.hold_timer = {key: 0.0 for key in self.das_directions}
 
         self.soft_drop_speed = gravity2ms(
             self.frame_rate, self.config.GENERAL.SOFT_DROP_SPEED

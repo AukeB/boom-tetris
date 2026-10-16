@@ -79,9 +79,9 @@ class PolyominoTransformer:
         """Load per-shape correction metadata for sizes that have a hand-
         authored JSON file, keyed by each shape's canonical cell tuple.
 
-        Only triominoes and tetrominoes currently have correction metadata
-        authored for them; `execute` falls back to an untransformed pipeline for
-        every other size, so no file is loaded for them here.
+        Only triominoes and tetrominoes have correction metadata authored for
+        them. Any other `polyomino_size` raises a `ValueError`, since there is
+        no metadata to load for it.
 
         1. Pick the properties file that matches `polyomino_size` and load its
            raw JSON content.
@@ -93,16 +93,21 @@ class PolyominoTransformer:
         Returns:
             polyomino_mapping (PolyominoMapping): Mapping from each shape's
                 canonical cell tuple to its correction properties.
+
+        Raises:
+            ValueError: If `polyomino_size` is neither 3 nor 4.
         """
-        # TODO: sizes other than 3 or 4 leave `polyomino_mapping` unbound
-        # below, since neither branch executes. Guard this once metadata
-        # for other sizes is added, or raise an explicit error instead.
         if self.polyomino_size == 3:
             with open(TRIOMINO_PROPERTIES_FILE_PATH, "r") as file:
                 polyomino_mapping = json.load(file)
-        if self.polyomino_size == 4:
+        elif self.polyomino_size == 4:
             with open(TETROMINO_PROPERTIES_FILE_PATH, "r") as file:
                 polyomino_mapping = json.load(file)
+        else:
+            raise ValueError(
+                f"No correction metadata for polyomino size {self.polyomino_size}; "
+                "only sizes 3 and 4 are supported."
+            )
 
         # Because the coordinate representation of the polyomino is used in
         # str format as key of the dictionary, we need to convert it to a tuple.
@@ -256,13 +261,11 @@ class PolyominoTransformer:
     def execute(
         self,
     ) -> tuple[list[list[Cell]], PolyominoMapping]:
-        """Run the full rotate → shift → mirror pipeline for sizes that have
-        correction metadata; return other sizes unchanged.
+        """Run the full rotate → shift → mirror pipeline on the shapes.
 
-        Triominoes and tetrominoes are the only sizes with hand-authored
-        correction metadata (see `_load_polyomino_properties`), so only they are
-        transformed into board-ready coordinates. Other sizes have no metadata
-        to apply, so their shapes pass through untransformed.
+        Only triominoes and tetrominoes can reach this method, since
+        `_load_polyomino_properties` raises for any other size (see
+        `_load_polyomino_properties`).
 
         Returns:
             polyominos (list[list[Cell]]): The corrected shapes for polyomino
