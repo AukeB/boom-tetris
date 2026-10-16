@@ -32,3 +32,8 @@ style = "google"
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--import-mode=importlib"
