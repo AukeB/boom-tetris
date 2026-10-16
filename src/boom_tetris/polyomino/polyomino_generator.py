@@ -26,14 +26,21 @@ class PolyominoGenerator:
     matches any rotation of a shape already seen.
 
     Attributes:
-        number_of_polyomino_cells (int): The exact number of cells each
+        _number_of_polyomino_cells (int): The exact number of cells each
             polyomino must contain.
-        directions (dict[str, list[int]]): Named step vectors used to find
+        _directions (dict[str, list[int]]): Named step vectors used to find
             neighbouring cells on the simulated grid.
-        unique_shapes (set[tuple[Cell, ...]]): The distinct polyominoes found so
-            far. Generation happens on a simulated grid, where a polyomino is
+        _unique_shapes (set[tuple[Cell, ...]]): The distinct polyominoes found
+            so far. Generation happens on a simulated grid, where a polyomino is
             represented as a tuple of ``Cell`` coordinates, so this attribute is
             a set of such coordinate tuples.
+
+    Example:
+        >>> generator = PolyominoGenerator(
+        ...     number_of_polyomino_cells=4,
+        ...     directions={"UP": [0, 1], "DOWN": [0, -1], "LEFT": [-1, 0], "RIGHT": [1, 0]},
+        ... )
+        >>> shapes = generator.generate()
     """
 
     def __init__(
@@ -47,9 +54,10 @@ class PolyominoGenerator:
             directions: Named step vectors used to find neighbouring cells. Each
                 value is a two- element list ``[dx, dy]``.
         """
-        self.number_of_polyomino_cells = number_of_polyomino_cells
-        self.directions = directions
-        self.unique_shapes: set[tuple[Cell, ...]] = set()
+
+        self._number_of_polyomino_cells = number_of_polyomino_cells
+        self._directions = directions
+        self._unique_shapes: set[tuple[Cell, ...]] = set()
 
     def _normalize(self, polyomino_shape: tuple[Cell, ...]) -> tuple[Cell, ...]:
         """Translate a shape so its bounding box starts at the origin, then sort
@@ -69,14 +77,18 @@ class PolyominoGenerator:
                 pairs.
 
         Returns:
-            tuple: A sorted tuple of ``(x, y)`` pairs with min-x = 0 and min-y =
-                0.
+            normalized_shape (tuple): A sorted tuple of ``(x, y)`` pairs with
+                min-x = 0 and min-y = 0.
         """
-        x_min = min(x for x, _ in polyomino_shape)
-        y_min = min(y for _, y in polyomino_shape)
-        normalized_shape = tuple(
-            sorted((x - x_min, y - y_min) for x, y in polyomino_shape)
-        )
+
+        x_values = [x for x, _ in polyomino_shape]
+        y_values = [y for _, y in polyomino_shape]
+        x_min = min(x_values)
+        y_min = min(y_values)
+
+        shifted_cells = [(x - x_min, y - y_min) for x, y in polyomino_shape]
+        sorted_cells = sorted(shifted_cells)
+        normalized_shape = tuple(sorted_cells)
 
         return normalized_shape
 
@@ -92,8 +104,9 @@ class PolyominoGenerator:
                 pairs.
 
         Returns:
-            tuple: A tuple of rotated ``(x, y)`` cell pairs.
+            rotated_shape (tuple): A tuple of rotated ``(x, y)`` cell pairs.
         """
+
         rotated_shape = tuple((y, -x) for x, y in polyomino_shape)
 
         return rotated_shape
@@ -118,13 +131,16 @@ class PolyominoGenerator:
                 pairs.
 
         Returns:
-            list[tuple]: A list of four normalised cell tuples, one per 90°
-                rotation step.
+            rotations (list[tuple]): A list of four normalised cell tuples, one
+                per 90° rotation step.
         """
+
         rotations: list[tuple[Cell, ...]] = []
         current_shape = polyomino_shape
 
-        for _ in range(len(self.directions)):
+        directions_count = len(self._directions)
+
+        for _ in range(directions_count):
             rotated_shape = self._rotate(current_shape)
             current_shape = self._normalize(rotated_shape)
             rotations.append(current_shape)
@@ -140,11 +156,11 @@ class PolyominoGenerator:
         ``generate`` is called again on that candidate. When the candidate
         reaches the target size, it is normalised and checked against all four
         of its rotations; if none of those rotations is already recorded, the
-        shape is added to ``unique_shapes``.
+        shape is added to ``_unique_shapes``.
 
         1. Check whether the current shape has reached the target cell count.
         2. If so, normalise the shape and compute its four rotations.
-        3. If none of the rotations appear in ``unique_shapes``, record the
+        3. If none of the rotations appear in ``_unique_shapes``, record the
            normalised shape.
         4. If the target has not been reached, iterate over every occupied cell
            and every direction; skip neighbours already in the shape; recurse
@@ -155,24 +171,26 @@ class PolyominoGenerator:
                 Defaults to a single cell at the origin to start the search.
 
         Returns:
-            set[tuple]: The set of all distinct polyominoes as canonical sorted
-                tuples, accumulated across the full recursion.
+            unique_shapes (set[tuple]): The set of all distinct polyominoes as
+                canonical sorted tuples, accumulated across the full recursion.
         """
+
         number_of_cells = len(polyomino_shape)
 
         # Record shape
-        if number_of_cells == self.number_of_polyomino_cells:
-            normalized_shape = self._normalize(tuple(polyomino_shape))
+        if number_of_cells == self._number_of_polyomino_cells:
+            shape_cells = tuple(polyomino_shape)
+            normalized_shape = self._normalize(shape_cells)
             all_rotations = self._obtain_all_rotations(normalized_shape)
 
-            if not any(rotation in self.unique_shapes for rotation in all_rotations):
-                self.unique_shapes.add(normalized_shape)
+            if not any(rotation in self._unique_shapes for rotation in all_rotations):
+                self._unique_shapes.add(normalized_shape)
 
-            return self.unique_shapes
+            return self._unique_shapes
 
         # Expand shape
         for x, y in polyomino_shape:
-            for _, (dx, dy) in self.directions.items():
+            for _, (dx, dy) in self._directions.items():
                 nx, ny = x + dx, y + dy
 
                 if (nx, ny) in polyomino_shape:
@@ -181,4 +199,4 @@ class PolyominoGenerator:
                 new_polyomino_shape = polyomino_shape | {(nx, ny)}
                 self.generate(polyomino_shape=new_polyomino_shape)
 
-        return self.unique_shapes
+        return self._unique_shapes

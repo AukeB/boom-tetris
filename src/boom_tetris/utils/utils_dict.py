@@ -16,9 +16,10 @@ def format_for_writing_to_yaml_file(
         path: Key path from the root for special cases (e.g. ALL_SHAPES).
 
     Returns:
-        Union[CommentedMap, CommentedSeq, Any]: ``CommentedMap``,
+        formatted (CommentedMap | CommentedSeq | Any): ``CommentedMap``,
             ``CommentedSeq``, or the original scalar.
     """
+
     path = path or []
 
     if isinstance(obj, dict):
@@ -28,36 +29,50 @@ def format_for_writing_to_yaml_file(
             new_map[k] = format_for_writing_to_yaml_file(v, path + [k])
 
         if not path:
-            keys = list(new_map.keys())
+            keys_view = new_map.keys()
+            keys = list(keys_view)
+
             for k in keys[1:]:
                 new_map.yaml_set_comment_before_after_key(k, before="\n")
 
         return new_map
-
     elif isinstance(obj, list):
         # Special case for POLYOMINO.ALL_SHAPES:
         if path == ["POLYOMINO", "ALL_SHAPES"]:
             outer = CommentedSeq()
+
             for shape in obj:
                 inner = CommentedSeq()
                 inner.fa.set_flow_style()  # force inline for each 2D shape
+
                 for point in shape:
                     inner.append(point)
+
                 outer.append(inner)
+
             return outer
 
         seq = CommentedSeq()
-        for item in obj:
-            seq.append(format_for_writing_to_yaml_file(item, path))
-        seq.fa.set_flow_style()  # Force inline.
-        return seq
 
+        for item in obj:
+            formatted_item = format_for_writing_to_yaml_file(item, path)
+            seq.append(formatted_item)
+
+        seq.fa.set_flow_style()  # Force inline.
+
+        return seq
     else:
         return obj
 
 
 class DotDict(dict[Any, Any]):
-    """``dict`` subclass with attribute access for nested configuration."""
+    """``dict`` subclass with attribute access for nested configuration.
+
+    Example:
+        >>> config = DotDict({"WINDOW": {"WIDTH": 800}})
+        >>> config.WINDOW.WIDTH
+        800
+    """
 
     def __init__(self, data: dict[Any, Any] | None = None) -> None:
         """Populate from a mapping, wrapping nested dicts as ``DotDict``.
@@ -65,6 +80,7 @@ class DotDict(dict[Any, Any]):
         Args:
             data: Source mapping, or empty if ``None``.
         """
+
         super().__init__()
         data = data or {}
 
@@ -78,15 +94,39 @@ class DotDict(dict[Any, Any]):
             attr: Key name.
 
         Returns:
-            Any: The stored value.
+            value (Any): The stored value.
 
         Raises:
             AttributeError: If the key is missing.
         """
+
         try:
-            return self[attr]
+            value = self[attr]
         except KeyError as e:
             raise AttributeError(f"'DotDict' object has no attribute '{attr}'") from e
+
+        return value
+
+    def _wrap(self, value: Any) -> Any:
+        """Recursively wrap dicts as ``DotDict`` and lists element-wise.
+
+        Args:
+            value: Arbitrary nested structure.
+
+        Returns:
+            wrapped (Any): Wrapped structure or the original scalar.
+        """
+
+        if isinstance(value, dict):
+            wrapped = DotDict(value)
+
+            return wrapped
+        elif isinstance(value, list):
+            wrapped = [self._wrap(v) for v in value]
+
+            return wrapped
+
+        return value
 
     def __setattr__(self, key: str, value: Any) -> None:
         """Store a value under ``key``, wrapping dicts as ``DotDict``.
@@ -95,6 +135,7 @@ class DotDict(dict[Any, Any]):
             key: Attribute and dict key name.
             value: Value to store (dicts are wrapped recursively).
         """
+
         self[key] = self._wrap(value)
 
     def __delattr__(self, key: str) -> None:
@@ -106,33 +147,19 @@ class DotDict(dict[Any, Any]):
         Raises:
             AttributeError: If the key is missing.
         """
+
         try:
             del self[key]
         except KeyError as e:
             raise AttributeError(f"'DotDict' object has no attribute '{key}'") from e
 
-    def _wrap(self, value: Any) -> Any:
-        """Recursively wrap dicts as ``DotDict`` and lists element-wise.
-
-        Args:
-            value: Arbitrary nested structure.
-
-        Returns:
-            Any: Wrapped structure or the original scalar.
-        """
-        if isinstance(value, dict):
-            return DotDict(value)
-        elif isinstance(value, list):
-            return [self._wrap(v) for v in value]
-
-        return value
-
     def to_dict(self) -> dict[Any, Any]:
         """Convert this tree to plain dicts and lists (no ``DotDict`` nodes).
 
         Returns:
-            dict: A JSON-serializable plain ``dict`` representation.
+            result (dict): A JSON-serializable plain ``dict`` representation.
         """
+
         result: dict[Any, Any] = {}
 
         for key, value in self.items():

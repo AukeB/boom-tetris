@@ -9,6 +9,7 @@ CONFIG_RUNTIME_FILE_PATH = Path("src/boom_tetris/configs/config_runtime.yaml")
 
 # Polyomino properpties paths.
 TRIOMINO_PROPERTIES_FILE_PATH = Path("src/boom_tetris/configs/triomino_properties.json")
+
 TETROMINO_PROPERTIES_FILE_PATH = Path(
     "src/boom_tetris/configs/tetromino_properties.json"
 )
@@ -29,8 +30,9 @@ unit of physical distance may be employed.
 may represent a position on the screen in pixel units, or a location within a
 grid or board, expressed in terms of columns and rows.
 """
+
 Dimensions = namedtuple("Dimensions", "rows cols")
-Size = namedtuple("Size", "width height")
+_Size = namedtuple("_Size", "width height")
 Position = namedtuple("Position", "x y")
 
 # Determines the ratio between the PyGame window resolution and the screen resolution

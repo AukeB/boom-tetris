@@ -9,9 +9,12 @@ def convert_drop_frames_to_time(framerate: float, frames_per_cell: int) -> float
         frames_per_cell: Number of frames spent per one cell drop.
 
     Returns:
-        (float): Drop interval in milliseconds.
+        drop_interval (float): Drop interval in milliseconds.
     """
-    return frames_per_cell / framerate * 1000
+
+    drop_interval = frames_per_cell / framerate * 1000
+
+    return drop_interval
 
 
 def compute_first_level_advancement(start_level: int) -> int:
@@ -21,9 +24,14 @@ def compute_first_level_advancement(start_level: int) -> int:
         start_level: Starting level index from configuration.
 
     Returns:
-        (int): Line count threshold for the first level-up.
+        first_advancement (int): Line count threshold for the first level-up.
     """
-    return min(start_level * 10 + 10, max(100, start_level * 10 - 50))
+
+    level_lines = start_level * 10 + 10
+    minimum_lines = max(100, start_level * 10 - 50)
+    first_advancement = min(level_lines, minimum_lines)
+
+    return first_advancement
 
 
 def get_frames_per_cell(level: int, frames_per_cell: dict[int, int]) -> int:
@@ -34,12 +42,15 @@ def get_frames_per_cell(level: int, frames_per_cell: dict[int, int]) -> int:
         frames_per_cell: Map from level to frames per one cell drop.
 
     Returns:
-        (int): Frames per cell for the effective level used for lookup.
+        frames (int): Frames per cell for the effective level used for lookup.
     """
+
     while level not in frames_per_cell:
         level -= 1
 
-    return frames_per_cell[level]
+    frames = frames_per_cell[level]
+
+    return frames
 
 
 def frames2ms(frame_rate: float, frames: int) -> float:
@@ -50,9 +61,12 @@ def frames2ms(frame_rate: float, frames: int) -> float:
         frames: Duration in frames.
 
     Returns:
-        (float): Duration in milliseconds.
+        milliseconds (float): Duration in milliseconds.
     """
-    return frames / frame_rate * 1000
+
+    milliseconds = frames / frame_rate * 1000
+
+    return milliseconds
 
 
 def gravity2ms(frame_rate: float, gravity: float) -> float:
@@ -63,6 +77,10 @@ def gravity2ms(frame_rate: float, gravity: float) -> float:
         gravity: Cells moved downward per frame when soft dropping.
 
     Returns:
-        (float): Time in milliseconds per cell at that gravity.
+        milliseconds_per_cell (float): Time in milliseconds per cell at that
+            gravity.
     """
-    return (1 / gravity) * 1000 / frame_rate
+
+    milliseconds_per_cell = (1 / gravity) * 1000 / frame_rate
+
+    return milliseconds_per_cell

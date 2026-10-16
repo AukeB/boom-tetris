@@ -12,7 +12,21 @@ from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolu
 
 
 class Renderer:
-    """Owns the display surface and draws the current game state each frame."""
+    """Owns the display surface and draws the current game state each frame.
+
+    Attributes:
+        _config (ConfigModelRuntime): Runtime configuration used for layout and
+            colors.
+        _window_width (int): Window width in pixels.
+        _window_height (int): Window height in pixels.
+        _background_color (list[int]): RGB color the frame is cleared to.
+        _surface (pg.Surface): The display surface everything is drawn on.
+        _font (pg.font.Font): Font used for all text.
+
+    Example:
+        >>> with renderer:
+        ...     renderer.draw_board(board=board)
+    """
 
     def __init__(
         self,
@@ -23,19 +37,22 @@ class Renderer:
         Args:
             config: Augmented model with window and board layout.
         """
-        self.config = config
-        self.window_width, self.window_height = get_window_size_from_screen_resolution()
 
-        self.background_color = self.config.WINDOW.COLOR.BACKGROUND
+        self._config = config
+        window_size = get_window_size_from_screen_resolution()
+        self._window_width, self._window_height = window_size
+
+        self._background_color = self._config.WINDOW.COLOR.BACKGROUND
 
         self._initialize_window()
 
-        self.surface = pg.display.get_surface()
-        self.font = pg.font.Font(str(FONT_FILE_PATH), self.config.FONT.SIZE)
+        self._surface = pg.display.get_surface()
+        font_path = str(FONT_FILE_PATH)
+        self._font = pg.font.Font(font_path, self._config.FONT.SIZE)
 
     def __enter__(self) -> None:
         """Clear the framebuffer to the window background color."""
-        self.surface.fill(color=self.background_color)
+        self._surface.fill(color=self._background_color)
 
     def __exit__(
         self,
@@ -50,11 +67,12 @@ class Renderer:
             exc_value: Exception instance if any.
             exc_trace: Traceback object if any.
         """
+
         pg.display.update()
 
     def _initialize_window(self) -> None:
         """Open a pygame display with the configured pixel size."""
-        pg.display.set_mode(size=(self.window_width, self.window_height))
+        pg.display.set_mode(size=(self._window_width, self._window_height))
 
     def draw_board(self, board: Board) -> None:
         """Fill the board rect and draw every locked block.
@@ -62,10 +80,11 @@ class Renderer:
         Args:
             board: Playfield whose ``cells`` matrix drives occupied squares.
         """
+
         # Draw the background of the board.
         pg.draw.rect(
-            surface=self.surface,
-            color=self.config.BOARD.COLOR.BACKGROUND,
+            surface=self._surface,
+            color=self._config.BOARD.COLOR.BACKGROUND,
             rect=board.rect,
         )
 
@@ -78,8 +97,8 @@ class Renderer:
                 cell.x = board.rect.x + board.cell_rect.width * col
 
                 pg.draw.rect(
-                    surface=self.surface,
-                    color=self.config.POLYOMINO.COLOR,
+                    surface=self._surface,
+                    color=self._config.POLYOMINO.COLOR,
                     rect=cell,
                 )
 
@@ -91,6 +110,7 @@ class Renderer:
             block_rect: Prototype rect (size matches one cell); mutated while
                 drawing.
         """
+
         polyomino_position = Position(
             x=block_rect.x + polyomino.x * block_rect.width,
             y=block_rect.y + polyomino.y * block_rect.height,
@@ -99,7 +119,7 @@ class Renderer:
         for block in polyomino:
             block_rect.x = polyomino_position.x + block[0] * block_rect.width
             block_rect.y = polyomino_position.y + block[1] * block_rect.height
-            pg.draw.rect(self.surface, (self.config.POLYOMINO.COLOR), block_rect)
+            pg.draw.rect(self._surface, (self._config.POLYOMINO.COLOR), block_rect)
 
     def draw_grid_lines(self, board: Board) -> None:
         """Draw optional vertical and horizontal grid lines when enabled.
@@ -107,31 +127,34 @@ class Renderer:
         Args:
             board: Board providing pixel geometry and visible row range.
         """
-        if self.config.BOARD.GRID_LINES.ENABLED:
+
+        if self._config.BOARD.GRID_LINES.ENABLED:
             for col in range(1, board.dimensions.cols):
                 x = board.rect.x + col * board.cell_rect.width
                 start_pos = (x, board.rect.y)
                 end_pos = (x, board.rect.y + board.rect.height)
+
                 pg.draw.line(
-                    self.surface,
-                    self.config.BOARD.GRID_LINES.LINE_COLOR,
+                    self._surface,
+                    self._config.BOARD.GRID_LINES.LINE_COLOR,
                     start_pos,
                     end_pos,
-                    self.config.BOARD.GRID_LINES.LINE_WIDTH,
+                    self._config.BOARD.GRID_LINES.LINE_WIDTH,
                 )
 
-            for row in range(
-                self.config.BOARD.DIMENSIONS.ROWS_HIDDEN + 1, board.dimensions.rows
-            ):
+            first_hidden_free_row = self._config.BOARD.DIMENSIONS.ROWS_HIDDEN + 1
+
+            for row in range(first_hidden_free_row, board.dimensions.rows):
                 y = board.rect.y + row * board.cell_rect.height
                 start_pos = (board.rect.x, y)
                 end_pos = (board.rect.x + board.rect.width, y)
+
                 pg.draw.line(
-                    self.surface,
-                    self.config.BOARD.GRID_LINES.LINE_COLOR,
+                    self._surface,
+                    self._config.BOARD.GRID_LINES.LINE_COLOR,
                     start_pos,
                     end_pos,
-                    self.config.BOARD.GRID_LINES.LINE_WIDTH,
+                    self._config.BOARD.GRID_LINES.LINE_WIDTH,
                 )
 
     def draw_rect(self, rect: pg.Rect, color: list[int]) -> None:
@@ -141,8 +164,9 @@ class Renderer:
             rect: Pixel rectangle defining position and size.
             color: RGB color to fill the rectangle with.
         """
+
         pg.draw.rect(
-            surface=self.surface,
+            surface=self._surface,
             color=color,
             rect=rect,
         )
@@ -157,11 +181,12 @@ class Renderer:
             rect (pg.Rect): Field rectangle the text is centered in.
             color: RGB text color; falls back to the configured font color.
         """
-        resolved_color = color or self.config.FONT.COLOR
 
-        text_surface = self.font.render(text, True, resolved_color)
+        resolved_color = color or self._config.FONT.COLOR
+
+        text_surface = self._font.render(text, True, resolved_color)
         text_rect = text_surface.get_rect(center=rect.center)
-        self.surface.blit(text_surface, text_rect)
+        self._surface.blit(text_surface, text_rect)
 
     def draw_label_and_value(
         self, label: str, value: str, rect: pg.Rect, color: list[int] | None = None
@@ -177,12 +202,17 @@ class Renderer:
             rect: Field rectangle the label/value pair is centered in.
             color: RGB text color; falls back to the configured font color.
         """
-        cell_height = self.config.BOARD.CELL.HEIGHT
+
+        cell_height = self._config.BOARD.CELL.HEIGHT
 
         label_rect = pg.Rect(0, 0, rect.width, cell_height)
         value_rect = pg.Rect(0, 0, rect.width, cell_height)
-        label_rect.center = (rect.centerx, round(rect.centery - cell_height))
-        value_rect.center = (rect.centerx, round(label_rect.centery + cell_height))
+
+        label_center_y = round(rect.centery - cell_height)
+        label_rect.center = (rect.centerx, label_center_y)
+
+        value_center_y = round(label_rect.centery + cell_height)
+        value_rect.center = (rect.centerx, value_center_y)
 
         self.draw_text(text=label, rect=label_rect, color=color)
         self.draw_text(text=value, rect=value_rect, color=color)

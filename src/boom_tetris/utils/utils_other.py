@@ -26,22 +26,28 @@ def get_window_size_from_screen_resolution(
         min_height (int): Minimum window height in pixels.
 
     Returns:
-        tuple[int, int]: The window width and height in pixels.
+        window_size (tuple[int, int]): The window width and height in pixels.
     """
+
     # Init
     if not pg.display.get_init():
         pg.display.init()
 
     # Resolve desktop resolution
     if pg.version.vernum >= (2, 0, 0):
-        desktop_width, desktop_height = pg.display.get_desktop_sizes()[monitor_index]
+        desktop_sizes = pg.display.get_desktop_sizes()
+        desktop_width, desktop_height = desktop_sizes[monitor_index]
     else:
         info = pg.display.Info()
         desktop_width = info.current_w if info.current_w > 0 else 1920
         desktop_height = info.current_h if info.current_h > 0 else 1080
 
     # Scale
-    width = max(min_width, int(desktop_width * WINDOW_SIZE_SCREEN_FRACTION))
-    height = max(min_height, int(desktop_height * WINDOW_SIZE_SCREEN_FRACTION))
+    scaled_width = int(desktop_width * WINDOW_SIZE_SCREEN_FRACTION)
+    scaled_height = int(desktop_height * WINDOW_SIZE_SCREEN_FRACTION)
+    width = max(min_width, scaled_width)
+    height = max(min_height, scaled_height)
 
-    return width, height
+    window_size = (width, height)
+
+    return window_size

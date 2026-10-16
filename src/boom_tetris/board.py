@@ -11,7 +11,29 @@ from src.boom_tetris.polyomino.polyomino import Polyomino
 
 
 class Board:
-    """Rectangular cell matrix with hidden rows above the visible field."""
+    """Rectangular cell matrix with hidden rows above the visible field.
+
+    Attributes:
+        dimensions (Dimensions): Number of rows (including hidden rows) and
+            columns of the cell grid.
+        rect (pg.Rect): Pixel rectangle of the whole board.
+        cells (list[list[int]]): Occupancy grid, 1 for an occupied cell.
+        cell_rect (pg.Rect): Pixel rectangle that sizes one cell.
+        hidden_rows_rect (pg.Rect): Pixel rectangle covering the hidden rows.
+        line_counter_rect (pg.Rect): Pixel rectangle of the line counter field.
+        score_rect (pg.Rect): Pixel rectangle of the score field.
+        next_rect (pg.Rect): Pixel rectangle of the next piece preview field.
+        level_rect (pg.Rect): Pixel rectangle of the level field.
+        type_rect (pg.Rect): Pixel rectangle of the type field.
+        statistics_rect (pg.Rect): Pixel rectangle of the statistics field.
+        _config (ConfigModelRuntime): The runtime configuration this board was
+            built from.
+
+    Example:
+        >>> board = Board(config=config_runtime)
+        >>> board.place(polyomino)
+        >>> lines_cleared = board.clear_lines()
+    """
 
     def __init__(
         self,
@@ -22,18 +44,19 @@ class Board:
         Args:
             config: Updated model with board geometry and colors.
         """
-        self.config = config
+
+        self._config = config
 
         self.dimensions = Dimensions(
-            rows=self.config.BOARD.DIMENSIONS.ROWS_TOTAL,
-            cols=self.config.BOARD.DIMENSIONS.COLS,
+            rows=self._config.BOARD.DIMENSIONS.ROWS_TOTAL,
+            cols=self._config.BOARD.DIMENSIONS.COLS,
         )
 
         self.rect = pg.Rect(
-            self.config.BOARD.RECT.LEFT,
-            self.config.BOARD.RECT.TOP,
-            self.config.BOARD.RECT.WIDTH,
-            self.config.BOARD.RECT.HEIGHT,
+            self._config.BOARD.RECT.LEFT,
+            self._config.BOARD.RECT.TOP,
+            self._config.BOARD.RECT.WIDTH,
+            self._config.BOARD.RECT.HEIGHT,
         )
 
         self.cells: list[list[int]] = [
@@ -44,62 +67,62 @@ class Board:
         self.cell_rect = pg.Rect(
             self.rect.left,
             self.rect.top,
-            self.config.BOARD.CELL.WIDTH,
-            self.config.BOARD.CELL.HEIGHT,
+            self._config.BOARD.CELL.WIDTH,
+            self._config.BOARD.CELL.HEIGHT,
         )
 
         hidden_rows_ratio = (
-            self.config.BOARD.DIMENSIONS.ROWS_HIDDEN
-            / self.config.BOARD.DIMENSIONS.ROWS_TOTAL
+            self._config.BOARD.DIMENSIONS.ROWS_HIDDEN
+            / self._config.BOARD.DIMENSIONS.ROWS_TOTAL
         )
 
         self.hidden_rows_rect = pg.Rect(
-            self.config.BOARD.RECT.LEFT,
-            self.config.BOARD.RECT.TOP,
-            self.config.BOARD.RECT.WIDTH,
-            self.config.BOARD.RECT.HEIGHT * hidden_rows_ratio,
+            self._config.BOARD.RECT.LEFT,
+            self._config.BOARD.RECT.TOP,
+            self._config.BOARD.RECT.WIDTH,
+            self._config.BOARD.RECT.HEIGHT * hidden_rows_ratio,
         )
 
         self.line_counter_rect = pg.Rect(
-            self.config.FIELDS.LINE_COUNTER.LEFT,
-            self.config.FIELDS.LINE_COUNTER.TOP,
-            self.config.FIELDS.LINE_COUNTER.WIDTH,
-            self.config.FIELDS.LINE_COUNTER.HEIGHT,
+            self._config.FIELDS.LINE_COUNTER.LEFT,
+            self._config.FIELDS.LINE_COUNTER.TOP,
+            self._config.FIELDS.LINE_COUNTER.WIDTH,
+            self._config.FIELDS.LINE_COUNTER.HEIGHT,
         )
 
         self.score_rect = pg.Rect(
-            self.config.FIELDS.SCORE.LEFT,
-            self.config.FIELDS.SCORE.TOP,
-            self.config.FIELDS.SCORE.WIDTH,
-            self.config.FIELDS.SCORE.HEIGHT,
+            self._config.FIELDS.SCORE.LEFT,
+            self._config.FIELDS.SCORE.TOP,
+            self._config.FIELDS.SCORE.WIDTH,
+            self._config.FIELDS.SCORE.HEIGHT,
         )
 
         self.next_rect = pg.Rect(
-            self.config.FIELDS.NEXT.LEFT,
-            self.config.FIELDS.NEXT.TOP,
-            self.config.FIELDS.NEXT.WIDTH,
-            self.config.FIELDS.NEXT.HEIGHT,
+            self._config.FIELDS.NEXT.LEFT,
+            self._config.FIELDS.NEXT.TOP,
+            self._config.FIELDS.NEXT.WIDTH,
+            self._config.FIELDS.NEXT.HEIGHT,
         )
 
         self.level_rect = pg.Rect(
-            self.config.FIELDS.LEVEL.LEFT,
-            self.config.FIELDS.LEVEL.TOP,
-            self.config.FIELDS.LEVEL.WIDTH,
-            self.config.FIELDS.LEVEL.HEIGHT,
+            self._config.FIELDS.LEVEL.LEFT,
+            self._config.FIELDS.LEVEL.TOP,
+            self._config.FIELDS.LEVEL.WIDTH,
+            self._config.FIELDS.LEVEL.HEIGHT,
         )
 
         self.type_rect = pg.Rect(
-            self.config.FIELDS.TYPE.LEFT,
-            self.config.FIELDS.TYPE.TOP,
-            self.config.FIELDS.TYPE.WIDTH,
-            self.config.FIELDS.TYPE.HEIGHT,
+            self._config.FIELDS.TYPE.LEFT,
+            self._config.FIELDS.TYPE.TOP,
+            self._config.FIELDS.TYPE.WIDTH,
+            self._config.FIELDS.TYPE.HEIGHT,
         )
 
         self.statistics_rect = pg.Rect(
-            self.config.FIELDS.STATISTICS.LEFT,
-            self.config.FIELDS.STATISTICS.TOP,
-            self.config.FIELDS.STATISTICS.WIDTH,
-            self.config.FIELDS.STATISTICS.HEIGHT,
+            self._config.FIELDS.STATISTICS.LEFT,
+            self._config.FIELDS.STATISTICS.TOP,
+            self._config.FIELDS.STATISTICS.WIDTH,
+            self._config.FIELDS.STATISTICS.HEIGHT,
         )
 
     def collision(
@@ -116,8 +139,10 @@ class Board:
             rotate_direction: Rotation index or delta passed to the piece.
 
         Returns:
-            bool: True if any occupied cell would be illegal after the move.
+            overlaps (bool): True if any occupied cell would be illegal after
+                the move.
         """
+
         for block in polyomino.get_rotation(rotate_direction):
             boundary_position = Position(
                 x=polyomino.x + block[0] + move_direction[0],
@@ -145,6 +170,7 @@ class Board:
         Args:
             polyominal: Locked piece (name kept for call-site compatibility).
         """
+
         for block in polyominal:
             self.cells[polyominal.y + block[1]][polyominal.x + block[0]] = 1
 
@@ -152,8 +178,9 @@ class Board:
         """Remove full rows, shift cells down, and count cleared lines.
 
         Returns:
-            int: Number of rows removed this call.
+            lines_cleared (int): Number of rows removed this call.
         """
+
         lines_cleared = 0
 
         for row in self.cells[:]:
@@ -171,6 +198,9 @@ class Board:
             Iterator[tuple[int, int]]: Row and column indices from ``(0,0)``
                 through the board extent.
         """
-        return itertools.product(
-            range(self.dimensions.rows), range(self.dimensions.cols)
-        )
+
+        row_indices = range(self.dimensions.rows)
+        col_indices = range(self.dimensions.cols)
+        cell_indices = itertools.product(row_indices, col_indices)
+
+        return cell_indices

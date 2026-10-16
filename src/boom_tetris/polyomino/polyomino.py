@@ -7,16 +7,56 @@ from src.boom_tetris.config.config_manager import ConfigManager
 from src.boom_tetris.constants import CONFIG_RUNTIME_FILE_PATH
 from src.boom_tetris.polyomino.polyomino_transformer import PolyominoTransformer
 
-config_runtime = ConfigManager().load_config_without_validation(
+_config_manager = ConfigManager()
+
+_config_runtime = _config_manager.load_config_without_validation(
     file_path=CONFIG_RUNTIME_FILE_PATH
 )
 
-polyomino_transformer = PolyominoTransformer(config=config_runtime)
-ALL_POLYOMINOS, POLYOMINO_MAPPING = polyomino_transformer.execute()
+_polyomino_transformer = PolyominoTransformer(config=_config_runtime)
+_ALL_POLYOMINOS, _POLYOMINO_MAPPING = _polyomino_transformer.execute()
 
 
 class Polyomino:
-    """One active piece with grid position, blocks, and rotation metadata."""
+    """One active piece with grid position, blocks, and rotation metadata.
+
+    Attributes:
+        x (int): Column of the piece origin in board cells.
+        y (int): Row of the piece origin in board cells.
+        index (int): Index into ``ALL_POLYOMINOS`` for this piece's shape.
+        _blocks (list[tuple[int, int]]): Block offsets of the current
+            orientation.
+        _properties (DotDict): Correction metadata for this shape.
+        _rotation_type (str | None): How the piece rotates, from its metadata.
+        _rotation_index (int): Current index into ``_rotations`` for predefined
+            rotation types.
+        _rotations (list): Predefined orientations, when the piece has them.
+
+    Example:
+        >>> piece = Polyomino(x=5, y=0)
+        >>> piece.rotate(direction=1)
+        >>> blocks = list(piece)
+    """
+
+    @staticmethod
+    def _roll_index(previous_polyomino_index: int | None) -> int:
+        """Return a piece index using the NES anti-repeat re-roll rule.
+
+        Args:
+            previous_index (int | None): Index of the previous piece, or
+                ``None`` to skip the repeat check.
+
+        Returns:
+            roll (int): Index into ``ALL_POLYOMINOS`` for the new piece.
+        """
+
+        count = len(_ALL_POLYOMINOS)
+        roll = rd.randint(0, count)
+
+        if roll == count or roll == previous_polyomino_index:
+            roll = rd.randint(0, count - 1)
+
+        return roll
 
     def __init__(
         self, x: int, y: int, previous_polyomino_index: int | None = None
@@ -34,38 +74,51 @@ class Polyomino:
                 spanwed piece, or ``None`` for the first piece. Defaults to
                 ``None``.
         """
+
         self.x = x
         self.y = y
 
         self.index = self._roll_index(previous_polyomino_index)
 
-        self.blocks = ALL_POLYOMINOS[self.index]
-        self.properties = POLYOMINO_MAPPING[tuple(self.blocks)]
-        self.rotation_type = self.properties.rotation_type
+        self._blocks = _ALL_POLYOMINOS[self.index]
+        shape_key = tuple(self._blocks)
+        self._properties = _POLYOMINO_MAPPING[shape_key]
+        self._rotation_type = self._properties.rotation_type
 
-        if self.rotation_type == "predefined":
-            self.rotation_index = 0
-            self.rotations = self.properties.rotations
-            self.blocks = self.rotations[self.rotation_index]
+        if self._rotation_type == "predefined":
+            self._rotation_index = 0
+            self._rotations = self._properties.rotations
+            self._blocks = self._rotations[self._rotation_index]
 
-    @staticmethod
-    def _roll_index(previous_polyomino_index: int | None) -> int:
-        """Return a piece index using the NES anti-repeat re-roll rule.
+    def get_rotation(self, direction: int) -> list[tuple[int, int]]:
+        """Return blocks for a rotation without mutating ``_rotation_index``.
 
         Args:
-            previous_index (int | None): Index of the previous piece, or
-                ``None`` to skip the repeat check.
+            direction: Rotation delta; ``0`` means no change.
 
         Returns:
-            int: Index into ``ALL_POLYOMINOS`` for the new piece.
+            blocks (list[tuple[int, int]]): List of ``(x, y)`` block offsets for
+                that orientation.
         """
-        count = len(ALL_POLYOMINOS)
-        roll = rd.randint(0, count)
 
-        if roll == count or roll == previous_polyomino_index:
-            roll = rd.randint(0, count - 1)
+        if direction == 0:
+            return self._blocks
 
-        return roll
+        # If polyomino has None as rotation_type (such as the tetromino square),
+        # do not perform rotational movement.
+        if self._rotation_type is None:
+            return self._blocks
+
+        if self._rotation_type == "predefined":
+            rotation_count = len(self._rotations)
+            rotation_index = (self._rotation_index + direction) % rotation_count
+            rotated_blocks = self._rotations[rotation_index]
+
+            return rotated_blocks
+
+        rotated_blocks = [(-y * direction, x * direction) for (x, y) in self._blocks]
+
+        return rotated_blocks
 
     def rotate(self, direction: int) -> None:
         """Advance rotation for predefined types or recompute block coordinates.
@@ -73,43 +126,22 @@ class Polyomino:
         Args:
             direction: Clockwise/counter-clockwise sign from configuration.
         """
-        if self.rotation_type == "predefined":
-            self.rotation_index = (self.rotation_index + direction) % len(
-                self.rotations
-            )
-            self.blocks = self.rotations[self.rotation_index]
+
+        if self._rotation_type == "predefined":
+            rotation_count = len(self._rotations)
+            self._rotation_index = (self._rotation_index + direction) % rotation_count
+            self._blocks = self._rotations[self._rotation_index]
         else:
-            self.blocks = self.get_rotation(direction=direction)
-
-    def get_rotation(self, direction: int) -> list[tuple[int, int]]:
-        """Return blocks for a rotation without mutating ``rotation_index``.
-
-        Args:
-            direction: Rotation delta; ``0`` means no change.
-
-        Returns:
-            list[tuple[int, int]]: List of ``(x, y)`` block offsets for that
-                orientation.
-        """
-        if direction == 0:
-            return self.blocks
-
-        # If polyomino has None as rotation_type (such as the tetromino square),
-        # do not perform rotational movement.
-        if self.rotation_type is None:
-            return self.blocks
-
-        if self.rotation_type == "predefined":
-            rotation_index = (self.rotation_index + direction) % len(self.rotations)
-            return self.rotations[rotation_index]
-
-        return [(-y * direction, x * direction) for (x, y) in self.blocks]
+            self._blocks = self.get_rotation(direction=direction)
 
     def __iter__(self) -> Iterator[tuple[int, int]]:
         """Iterate over the current block offset list.
 
         Returns:
-            Iterator[tuple[int, int]]: Iterator over ``(dx, dy)`` cells relative
-                to the piece origin.
+            blocks_iterator (Iterator[tuple[int, int]]): Iterator over ``(dx,
+                dy)`` cells relative to the piece origin.
         """
-        return iter(self.blocks)
+
+        blocks_iterator = iter(self._blocks)
+
+        return blocks_iterator

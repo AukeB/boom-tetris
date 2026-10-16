@@ -45,17 +45,21 @@ class PolyominoTransformer:
     metadata, by running each shape through a rotate → shift → mirror pipeline:
     `_rotate` turns a shape into its intended spawn orientation, `_shift` moves
     it into its intended spawn position, and `_mirror_horizontally` reconciles
-    the generator's coordinate system with the board's. Sizes without correction
-    metadata are returned unchanged.
+    the generator's coordinate system with the board's. Only sizes 3 and 4 have
+    correction metadata; any other size raises a `ValueError`.
 
     Attributes:
-        polyominos (list[PolyominoBlocks]): The polyomino shapes being
+        _polyominos (list[PolyominoBlocks]): The polyomino shapes being
             transformed, one entry per distinct shape.
-        polyomino_size (int): The number of cells in each polyomino, used to
-            decide whether correction metadata exists and should be applied.
-        polyomino_mapping (PolyominoMapping): Per-shape correction metadata
+        _polyomino_size (int): The number of cells in each polyomino, used to
+            decide which correction metadata file to load.
+        _polyomino_mapping (PolyominoMapping): Per-shape correction metadata
             (rotation and position corrections), keyed by the shape's canonical,
             sorted cell tuple.
+
+    Example:
+        >>> transformer = PolyominoTransformer(config=config_runtime)
+        >>> polyominos, polyomino_mapping = transformer.execute()
     """
 
     def __init__(self, config: DotDict) -> None:
@@ -66,13 +70,15 @@ class PolyominoTransformer:
             config (DotDict): Augmented game configuration including
                 `POLYOMINO.ALL_SHAPES` and `POLYOMINO.SIZE`.
         """
-        self.polyominos: list[PolyominoBlocks] = (
-            config.POLYOMINO.ALL_SHAPES
-            if config.POLYOMINO.ALL_SHAPES is not None
-            else []
+
+        all_shapes = config.POLYOMINO.ALL_SHAPES
+
+        self._polyominos: list[PolyominoBlocks] = (
+            all_shapes if all_shapes is not None else []
         )
-        self.polyomino_size = config.POLYOMINO.SIZE
-        self.polyomino_mapping: PolyominoMapping = self._load_polyomino_properties()
+
+        self._polyomino_size = config.POLYOMINO.SIZE
+        self._polyomino_mapping: PolyominoMapping = self._load_polyomino_properties()
         self._sort()
 
     def _load_polyomino_properties(self) -> PolyominoMapping:
@@ -97,59 +103,67 @@ class PolyominoTransformer:
         Raises:
             ValueError: If `polyomino_size` is neither 3 nor 4.
         """
-        if self.polyomino_size == 3:
+
+        if self._polyomino_size == 3:
             with open(TRIOMINO_PROPERTIES_FILE_PATH, "r") as file:
-                polyomino_mapping = json.load(file)
-        elif self.polyomino_size == 4:
+                raw_mapping = json.load(file)
+        elif self._polyomino_size == 4:
             with open(TETROMINO_PROPERTIES_FILE_PATH, "r") as file:
-                polyomino_mapping = json.load(file)
+                raw_mapping = json.load(file)
         else:
             raise ValueError(
-                f"No correction metadata for polyomino size {self.polyomino_size}; "
+                f"No correction metadata for polyomino size {self._polyomino_size}; "
                 "only sizes 3 and 4 are supported."
             )
 
         # Because the coordinate representation of the polyomino is used in
         # str format as key of the dictionary, we need to convert it to a tuple.
-        polyomino_mapping = {
-            tuple(map(tuple, json.loads(k))): v for k, v in polyomino_mapping.items()
-        }
+        polyomino_mapping = {}
+
+        for key, value in raw_mapping.items():
+            decoded_key = json.loads(key)
+            cell_pairs = map(tuple, decoded_key)
+            cell_tuple = tuple(cell_pairs)
+            polyomino_mapping[cell_tuple] = value
 
         # Because the dictionary keys are tuples, apply the DotDict one level deeper.
         for polyomino_index in polyomino_mapping:
-            polyomino_mapping[polyomino_index] = DotDict(
-                polyomino_mapping[polyomino_index]
-            )
+            properties = DotDict(polyomino_mapping[polyomino_index])
+            polyomino_mapping[polyomino_index] = properties
 
         return polyomino_mapping
 
     def _sort(self) -> None:
-        """Re-establish a shared, deterministic order across `polyominos` and
-        `polyomino_mapping`.
+        """Re-establish a shared, deterministic order across `_polyominos` and
+        `_polyomino_mapping`.
 
         Every transform step in this pipeline (`_rotate`, `_shift`,
-        `_mirror_horizontally`) pairs up `self.polyominos` and
-        `self.polyomino_mapping` positionally via `zip`, trusting that index `i`
-        in one refers to the same shape as index `i` in the other. Applying a
-        correction changes a shape's underlying cell coordinates, which can
+        `_mirror_horizontally`) pairs up `self._polyominos` and
+        `self._polyomino_mapping` positionally via `zip`, trusting that index
+        `i` in one refers to the same shape as index `i` in the other. Applying
+        a correction changes a shape's underlying cell coordinates, which can
         change how it sorts relative to its neighbours. Re-sorting both
         collections by their (now updated) cell values after every step restores
         that shared order, so the next step's `zip` keeps pairing each shape
         with its own metadata instead of someone else's.
         """
+
         # Sort the polyominos.
-        self.polyominos = list(
-            sorted(sorted(polyomino) for polyomino in self.polyominos)
-        )
+        sorted_rows = [sorted(polyomino) for polyomino in self._polyominos]
+        sorted_shapes = sorted(sorted_rows)
+        self._polyominos = list(sorted_shapes)
 
         # Sort the polyomino mapping.
         sorted_polyomino_mapping: PolyominoMapping = {}
 
-        for k, _ in self.polyomino_mapping.items():
-            sorted_key = tuple(sorted(k))
-            sorted_polyomino_mapping[sorted_key] = self.polyomino_mapping[k]
+        for k, _ in self._polyomino_mapping.items():
+            sorted_cells = sorted(k)
+            sorted_key = tuple(sorted_cells)
+            sorted_polyomino_mapping[sorted_key] = self._polyomino_mapping[k]
 
-        self.polyomino_mapping = dict(sorted(sorted_polyomino_mapping.items()))
+        mapping_items = sorted_polyomino_mapping.items()
+        sorted_items = sorted(mapping_items)
+        self._polyomino_mapping = dict(sorted_items)
 
     def _rotate(self) -> None:
         """Apply each shape's `rotation_correction` to align it with its
@@ -162,11 +176,12 @@ class PolyominoTransformer:
         negative value applies a single 90° turn in the corresponding direction,
         while `0` (or a missing value) leaves the shape untouched.
         """
-        updated_polyomino_mapping: PolyominoMapping = {}
 
-        for i, (polyomino, (_, polyomino_properties)) in enumerate(
-            zip(self.polyominos, self.polyomino_mapping.items())
-        ):
+        updated_polyomino_mapping: PolyominoMapping = {}
+        mapping_items = self._polyomino_mapping.items()
+        paired_items = zip(self._polyominos, mapping_items)
+
+        for i, (polyomino, (_, polyomino_properties)) in enumerate(paired_items):
             if (
                 "rotation_correction" in polyomino_properties
                 and polyomino_properties.rotation_correction != 0
@@ -179,16 +194,14 @@ class PolyominoTransformer:
                     for [x, y] in polyomino
                 ]
 
-                self.polyominos[i] = rotated_polyomino
-                updated_polyomino_mapping[
-                    tuple((block[0], block[1]) for block in rotated_polyomino)
-                ] = polyomino_properties
+                self._polyominos[i] = rotated_polyomino
+                rotated_key = tuple((block[0], block[1]) for block in rotated_polyomino)
+                updated_polyomino_mapping[rotated_key] = polyomino_properties
             else:
-                updated_polyomino_mapping[
-                    tuple((block[0], block[1]) for block in polyomino)
-                ] = polyomino_properties
+                original_key = tuple((block[0], block[1]) for block in polyomino)
+                updated_polyomino_mapping[original_key] = polyomino_properties
 
-        self.polyomino_mapping = updated_polyomino_mapping
+        self._polyomino_mapping = updated_polyomino_mapping
 
         self._sort()
 
@@ -202,11 +215,12 @@ class PolyominoTransformer:
         that moves the whole shape to fix that. Shapes without a correction, or
         with an all-zero offset, are left untouched.
         """
-        updated_polyomino_mapping: PolyominoMapping = {}
 
-        for i, (polyomino, (_, polyomino_properties)) in enumerate(
-            zip(self.polyominos, self.polyomino_mapping.items())
-        ):
+        updated_polyomino_mapping: PolyominoMapping = {}
+        mapping_items = self._polyomino_mapping.items()
+        paired_items = zip(self._polyominos, mapping_items)
+
+        for i, (polyomino, (_, polyomino_properties)) in enumerate(paired_items):
             if "position_correction" in polyomino_properties and any(
                 x != 0 for x in polyomino_properties.position_correction
             ):
@@ -218,16 +232,14 @@ class PolyominoTransformer:
                     for [x, y] in polyomino
                 ]
 
-                self.polyominos[i] = shifted_polyomino
-                updated_polyomino_mapping[
-                    tuple((block[0], block[1]) for block in shifted_polyomino)
-                ] = polyomino_properties
+                self._polyominos[i] = shifted_polyomino
+                shifted_key = tuple((block[0], block[1]) for block in shifted_polyomino)
+                updated_polyomino_mapping[shifted_key] = polyomino_properties
             else:
-                updated_polyomino_mapping[
-                    tuple((block[0], block[1]) for block in polyomino)
-                ] = polyomino_properties
+                original_key = tuple((block[0], block[1]) for block in polyomino)
+                updated_polyomino_mapping[original_key] = polyomino_properties
 
-        self.polyomino_mapping = updated_polyomino_mapping
+        self._polyomino_mapping = updated_polyomino_mapping
 
         self._sort()
 
@@ -242,19 +254,19 @@ class PolyominoTransformer:
         with an up-positive y-axis ends up correctly oriented once it is placed
         on the board's down-positive y-axis.
         """
-        updated_polyomino_mapping: PolyominoMapping = {}
 
-        for i, (polyomino, (_, polyomino_properties)) in enumerate(
-            zip(self.polyominos, self.polyomino_mapping.items())
-        ):
+        updated_polyomino_mapping: PolyominoMapping = {}
+        mapping_items = self._polyomino_mapping.items()
+        paired_items = zip(self._polyominos, mapping_items)
+
+        for i, (polyomino, (_, polyomino_properties)) in enumerate(paired_items):
             mirrored_polyomino = [[x, -y] for [x, y] in polyomino]
 
-            self.polyominos[i] = mirrored_polyomino
-            updated_polyomino_mapping[
-                tuple((block[0], block[1]) for block in mirrored_polyomino)
-            ] = polyomino_properties
+            self._polyominos[i] = mirrored_polyomino
+            mirrored_key = tuple((block[0], block[1]) for block in mirrored_polyomino)
+            updated_polyomino_mapping[mirrored_key] = polyomino_properties
 
-        self.polyomino_mapping = updated_polyomino_mapping
+        self._polyomino_mapping = updated_polyomino_mapping
 
         self._sort()
 
@@ -264,21 +276,21 @@ class PolyominoTransformer:
         """Run the full rotate → shift → mirror pipeline on the shapes.
 
         Only triominoes and tetrominoes can reach this method, since
-        `_load_polyomino_properties` raises for any other size (see
-        `_load_polyomino_properties`).
+        `_load_polyomino_properties` raises for any other size.
 
         Returns:
-            polyominos (list[list[Cell]]): The corrected shapes for polyomino
-                sizes, or the untouched shapes for any other size, with each
-                cell as un immutable `(x,y)` tuple.
-            polyomino_mapping (PolyominoMapping): The corresponding correction
-                metadata, keyed by each shape's canonical cell tuple.
+            result (tuple[list[list[Cell]], PolyominoMapping]): The corrected
+                shapes, with each cell as an immutable `(x,y)` tuple, and the
+                corresponding correction metadata keyed by each shape's
+                canonical cell tuple.
         """
-        if self.polyomino_size in [3, 4]:
+
+        if self._polyomino_size in [3, 4]:
             self._rotate()
             self._shift()
             self._mirror_horizontally()
 
-        polyominos = [[(x, y) for x, y in shape] for shape in self.polyominos]
+        polyominos = [[(x, y) for x, y in shape] for shape in self._polyominos]
+        result = (polyominos, self._polyomino_mapping)
 
-        return polyominos, self.polyomino_mapping
+        return result

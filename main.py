@@ -14,6 +14,5 @@ def main() -> None:
     while game.update():
         pass
 
-
 if __name__ == "__main__":
     main()

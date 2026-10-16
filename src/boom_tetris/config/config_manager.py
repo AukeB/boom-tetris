@@ -17,8 +17,8 @@ from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolu
 
 # YAML parser and serializer using ruamel.yaml.
 # This instance allows reading and writing YAML files with indentation preserved.
-yaml = YAML()
-yaml.indent(mapping=2, sequence=4, offset=2)
+_yaml = YAML()
+_yaml.indent(mapping=2, sequence=4, offset=2)
 
 
 class ConfigManager:
@@ -54,16 +54,25 @@ class ConfigManager:
         `load_config_without_validation` is public because other modules may
         need to load YAML data without converting it to a Pydantic model, e.g.,
         for temporary or partial inspection, manipulation, or testing.
+
+    Attributes:
+        _config_source_file_path (Path): Path of the editable source config.
+        _config_runtime_file_path (Path): Path of the derived runtime config.
+
+    Example:
+        >>> config_manager = ConfigManager()
+        >>> config_runtime = config_manager.get_runtime_config()
     """
 
     def __init__(self) -> None:
         """Initialisation of the `ConfigManager` class.
 
-        Args:
-            config_path (Path): Path to the configuration file.
+        The file paths come from the constants module, so no arguments are
+        needed.
         """
-        self.config_source_file_path = CONFIG_SOURCE_FILE_PATH
-        self.config_runtime_file_path = CONFIG_RUNTIME_FILE_PATH
+
+        self._config_source_file_path = CONFIG_SOURCE_FILE_PATH
+        self._config_runtime_file_path = CONFIG_RUNTIME_FILE_PATH
 
     def load_config_without_validation(self, file_path: Path) -> DotDict:
         """Load a YAML configuration file as a mutable DotDict.
@@ -75,45 +84,54 @@ class ConfigManager:
             file_path (Path): The path to the YAML file to load.
 
         Returns:
-            DotDict: The contents of the YAML file as a mutable dictionary
-                supporting attribute- style access.
+            config (DotDict): The contents of the YAML file as a mutable
+                dictionary supporting attribute- style access.
         """
+
         with open(file_path) as file:
-            return DotDict(yaml.load(file))
+            data = _yaml.load(file)
+            config = DotDict(data)
+
+            return config
 
     def _load_source_config(self) -> ConfigModelSource:
         """Load the source configuration file and validate it against
         `ConfigModelSource`.
 
         Returns:
-            ConfigModelSource: A validated configuration model representing the
-                editable source configuration.
+            config_source (ConfigModelSource): A validated configuration model
+                representing the editable source configuration.
 
         Notes:
             This is the “authoritative” config that you can edit manually
             (`config.yaml`). It is converted to the Pydantic model to enforce
             schema and type safety.
         """
-        data = self.load_config_without_validation(self.config_source_file_path)
 
-        return ConfigModelSource(**data)
+        data = self.load_config_without_validation(self._config_source_file_path)
+        config_source = ConfigModelSource(**data)
+
+        return config_source
 
     def _load_runtime_config(self) -> ConfigModelRuntime:
         """Load the runtime configuration file and validate it against
         `ConfigModelRuntime`.
 
         Returns:
-            ConfigModelRuntime: A validated configuration model ready for use in
-                the game runtime, with all computed fields included.
+            config_runtime (ConfigModelRuntime): A validated configuration model
+                ready for use in the game runtime, with all computed fields
+                included.
 
         Notes:
             This configuration is typically derived from the source config via
             internal computations (board size, polyomino shapes, etc.). It
             should not be manually edited. Use this for all runtime operations.
         """
-        data = self.load_config_without_validation(self.config_runtime_file_path)
 
-        return ConfigModelRuntime(**data)
+        data = self.load_config_without_validation(self._config_runtime_file_path)
+        config_runtime = ConfigModelRuntime(**data)
+
+        return config_runtime
 
     def _add_window_resolution(self, config: DotDict) -> DotDict:
         """Resolve the pygame window dimensions from the current screen size.
@@ -125,8 +143,10 @@ class ConfigManager:
             config: Mutable dot-config with a WINDOW section.
 
         Returns:
-            DotDict: Same config with WINDOW.WIDTH and WINDOW.HEIGHT populated.
+            config (DotDict): Same config with WINDOW.WIDTH and WINDOW.HEIGHT
+                populated.
         """
+
         window_width, window_height = get_window_size_from_screen_resolution()
 
         config.WINDOW.WIDTH = window_width
@@ -165,8 +185,8 @@ class ConfigManager:
                 dimensions, margin ratio, and polyomino settings.
 
         Returns:
-            DotDict: The same config object with computed layout parameters
-                added.
+            config (DotDict): The same config object with computed layout
+                parameters added.
         """
         # Computations.
 
@@ -193,15 +213,18 @@ class ConfigManager:
         # Computations to add line counter field above the board.
         line_counter_height_in_cells = config.FIELDS.LINE_COUNTER.HEIGHT_CELLS
         line_counter_height = line_counter_height_in_cells * cell_height
+
         scale_ratio = (config.WINDOW.HEIGHT - 3 * margin) / (
             unscaled_board_height + line_counter_height_in_cells * cell_height
         )
+
         cell_height *= scale_ratio
         cell_width *= scale_ratio
         line_counter_height = line_counter_height_in_cells * cell_height
         board_height *= scale_ratio
         board_width *= scale_ratio
         board_left = window_horizontal_mid - board_width / 2
+
         board_top = (
             margin
             + line_counter_height
@@ -220,6 +243,7 @@ class ConfigManager:
         window_width = round(config.WINDOW.WIDTH * snap_ratio)
         window_height = round(config.WINDOW.HEIGHT * snap_ratio)
         board_left = round(window_width / 2 - board_width / 2)
+
         board_top = (
             margin
             + line_counter_height
@@ -270,15 +294,19 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            DotDict: Same config with SCORE pixel geometry populated.
+            config (DotDict): Same config with SCORE pixel geometry populated.
         """
+
         config.FIELDS.SCORE.LEFT = (
             config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
         )
+
         config.FIELDS.SCORE.TOP = config.WINDOW.MARGIN
+
         config.FIELDS.SCORE.WIDTH = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.SCORE.WIDTH_CELLS
         )
+
         config.FIELDS.SCORE.HEIGHT = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.SCORE.HEIGHT_CELLS
         )
@@ -300,19 +328,23 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            DotDict: Same config with NEXT pixel geometry populated.
+            config (DotDict): Same config with NEXT pixel geometry populated.
         """
+
         next_height = config.FIELDS.NEXT.HEIGHT_CELLS * config.BOARD.CELL.HEIGHT
 
         config.FIELDS.NEXT.LEFT = (
             config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
         )
+
         config.FIELDS.NEXT.TOP = int(
             config.BOARD.RECT.TOP + config.BOARD.RECT.HEIGHT / 2 - next_height / 2
         )
+
         config.FIELDS.NEXT.WIDTH = (
             config.FIELDS.NEXT.WIDTH_CELLS * config.BOARD.CELL.HEIGHT
         )
+
         config.FIELDS.NEXT.HEIGHT = next_height
 
         return config
@@ -332,17 +364,21 @@ class ConfigManager:
                 geometry.
 
         Returns:
-            DotDict: Same config with LEVEL pixel geometry populated.
+            config (DotDict): Same config with LEVEL pixel geometry populated.
         """
+
         config.FIELDS.LEVEL.LEFT = (
             config.BOARD.RECT.LEFT + config.BOARD.RECT.WIDTH + config.WINDOW.MARGIN
         )
+
         config.FIELDS.LEVEL.TOP = (
             config.FIELDS.NEXT.TOP + config.FIELDS.NEXT.HEIGHT + config.WINDOW.MARGIN
         )
+
         config.FIELDS.LEVEL.WIDTH = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.LEVEL.WIDTH_CELLS
         )
+
         config.FIELDS.LEVEL.HEIGHT = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.LEVEL.HEIGHT_CELLS
         )
@@ -365,11 +401,14 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            DotDict: Same config with STATISTICS pixel geometry populated.
+            config (DotDict): Same config with STATISTICS pixel geometry
+                populated.
         """
+
         statistics_width = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.STATISTICS.WIDTH_CELLS
         )
+
         statistics_height = (
             config.BOARD.CELL.HEIGHT * config.FIELDS.STATISTICS.HEIGHT_CELLS
         )
@@ -377,9 +416,11 @@ class ConfigManager:
         config.FIELDS.STATISTICS.LEFT = (
             config.BOARD.RECT.LEFT - config.WINDOW.MARGIN - statistics_width
         )
+
         config.FIELDS.STATISTICS.TOP = (
             config.BOARD.RECT.TOP + config.BOARD.RECT.HEIGHT - statistics_height
         )
+
         config.FIELDS.STATISTICS.WIDTH = statistics_width
         config.FIELDS.STATISTICS.HEIGHT = statistics_height
 
@@ -402,8 +443,9 @@ class ConfigManager:
                 counter geometry.
 
         Returns:
-            DotDict: Same config with TYPE pixel geometry populated.
+            config (DotDict): Same config with TYPE pixel geometry populated.
         """
+
         type_width = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.WIDTH_CELLS
         type_height = config.BOARD.CELL.HEIGHT * config.FIELDS.TYPE.HEIGHT_CELLS
 
@@ -412,9 +454,11 @@ class ConfigManager:
             + config.FIELDS.STATISTICS.WIDTH / 2
             - type_width / 2
         )
+
         config.FIELDS.TYPE.TOP = int(
             config.FIELDS.LINE_COUNTER.TOP + config.FIELDS.LINE_COUNTER.HEIGHT / 2
         )
+
         config.FIELDS.TYPE.WIDTH = type_width
         config.FIELDS.TYPE.HEIGHT = type_height
 
@@ -437,9 +481,10 @@ class ConfigManager:
             config: Mutable dot-config with snapped board geometry.
 
         Returns:
-            DotDict: Same config with all remaining field pixel geometries
-                populated.
+            config (DotDict): Same config with all remaining field pixel
+                geometries populated.
         """
+
         updated_config = self._add_score_field(config=config)
         updated_config = self._add_next_field(config=updated_config)
         updated_config = self._add_level_field(config=updated_config)
@@ -455,8 +500,9 @@ class ConfigManager:
             config: Mutable doc-config with snapped cell geometry.
 
         Returns:
-            DotDict: Same config with FONT.SIZE populated in pixels.
+            config (DotDict): Same config with FONT.SIZE populated in pixels.
         """
+
         config.FONT.SIZE = int(config.FONT.SIZE_CELLS * config.BOARD.CELL.HEIGHT)
 
         return config
@@ -471,14 +517,16 @@ class ConfigManager:
             config: Mutable dot-config with snapped board dimensions.
 
         Returns:
-            DotDict: Same config with SPAWN_POSITION and SPAWN_POSITION_NEXT
-                populated.
+            config (DotDict): Same config with SPAWN_POSITION and
+                SPAWN_POSITION_NEXT populated.
         """
+
         # Add other parameters.
         config.POLYOMINO.SPAWN_POSITION = [
             config.BOARD.DIMENSIONS.COLS // 2,
             config.BOARD.DIMENSIONS.ROWS_HIDDEN,
         ]
+
         config.POLYOMINO.SPAWN_POSITION_NEXT = [
             config.BOARD.DIMENSIONS.COLS + 3,
             int(config.BOARD.DIMENSIONS.ROWS / 2),
@@ -495,8 +543,10 @@ class ConfigManager:
             config: Mutable dot-config with ``POLYOMINO.SIZE`` and directions.
 
         Returns:
-            DotDict: Same ``config`` with ``POLYOMINO.ALL_SHAPES`` populated.
+            config (DotDict): Same ``config`` with ``POLYOMINO.ALL_SHAPES``
+                populated.
         """
+
         # Exclude `rotations` from `directions`.
         directions = {
             key: value
@@ -523,15 +573,17 @@ class ConfigManager:
             config: Validated model loaded after update.
 
         Returns:
-            ConfigModelRuntime: A copy with updated ``DIRECTIONS`` field types.
+            config (ConfigModelRuntime): A copy with updated ``DIRECTIONS``
+                field types.
         """
+
+        up = Position(*config.DIRECTIONS.UP)
+        down = Position(*config.DIRECTIONS.DOWN)
+        left = Position(*config.DIRECTIONS.LEFT)
+        right = Position(*config.DIRECTIONS.RIGHT)
+
         new_directions = config.DIRECTIONS.model_copy(
-            update={
-                "UP": Position(*config.DIRECTIONS.UP),
-                "DOWN": Position(*config.DIRECTIONS.DOWN),
-                "LEFT": Position(*config.DIRECTIONS.LEFT),
-                "RIGHT": Position(*config.DIRECTIONS.RIGHT),
-            }
+            update={"UP": up, "DOWN": down, "LEFT": left, "RIGHT": right}
         )
 
         config = config.model_copy(update={"DIRECTIONS": new_directions})
@@ -545,11 +597,12 @@ class ConfigManager:
             file_path: Output path for the YAML file.
             config: Dot-access configuration to dump.
         """
+
         config_dict = config.to_dict()
         config_dict_formatted = format_for_writing_to_yaml_file(obj=config_dict)
 
         with open(file_path, "w") as file:
-            yaml.dump(config_dict_formatted, file)
+            _yaml.dump(config_dict_formatted, file)
 
     def get_runtime_config(self) -> ConfigModelRuntime:
         """Compute board metrics, shapes, write YAML, reload, and fix types.
@@ -559,15 +612,17 @@ class ConfigManager:
                 file.ConfigModelRuntime
 
         Returns:
-            ConfigModelRuntime: Final ``ConfigModel`` ready for the game (with
-                ``Position`` dirs).
+            config_runtime (ConfigModelRuntime): Final ``ConfigModel`` ready for
+                the game (with ``Position`` dirs).
         """
+
         # Load and validate source configuration file.
         config_source = self._load_source_config()
 
         # Convert from Pydantic Basemodel to dictionary and then to DotDict
         # instance, to keep using dot notation for dictionary keys and values.
-        config_source = DotDict(config_source.model_dump())
+        source_dict = config_source.model_dump()
+        config_source = DotDict(source_dict)
 
         # Add computational parameters.
         updated_config = self._add_window_resolution(config=config_source)
