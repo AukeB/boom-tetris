@@ -194,6 +194,26 @@ def test_lock_polyomino_updates_drop_speed_for_known_levels(game):
     assert game._drop_interval == pytest.approx(2 / framerate * 1000)
 
 
+def test_lock_polyomino_sets_game_over_when_locked_in_hidden_rows(game):
+    hidden_rows = game._config.BOARD.DIMENSIONS.ROWS_HIDDEN
+    lowest = max(block[1] for block in game._polyomino)
+    game._polyomino.y = hidden_rows - 1 - lowest
+
+    game._lock_polyomino()
+
+    assert game._game_over is True
+
+
+def test_lock_polyomino_leaves_game_over_unset_when_locked_in_visible_rows(game):
+    hidden_rows = game._config.BOARD.DIMENSIONS.ROWS_HIDDEN
+    lowest = max(block[1] for block in game._polyomino)
+    game._polyomino.y = hidden_rows - lowest
+
+    game._lock_polyomino()
+
+    assert game._game_over is False
+
+
 # Testing the "_update_das" method.
 
 
@@ -307,6 +327,20 @@ def test_spawn_next_polyomino_activates_the_preview(game):
     assert game._next_polyomino is not preview
 
 
+def test_spawn_next_polyomino_sets_game_over_when_spawn_is_blocked(game):
+    _fill_bottom_rows(game, game._board.dimensions.rows)
+
+    game._spawn_next_polyomino()
+
+    assert game._game_over is True
+
+
+def test_spawn_next_polyomino_leaves_game_over_unset_when_spawn_is_free(game):
+    game._spawn_next_polyomino()
+
+    assert game._game_over is False
+
+
 # Testing the "_handle_timers" method.
 
 
@@ -384,6 +418,17 @@ def test_handle_controls_moves_right_when_free(game):
     game._handle_controls(event)
 
     assert game._polyomino.x == 6
+
+
+def test_handle_controls_ignores_piece_actions_after_game_over(game):
+    game._game_over = True
+    game._polyomino.x = 5
+
+    event = _key_event(pg.KEYDOWN, KEY.LEFT)
+
+    game._handle_controls(event)
+
+    assert game._polyomino.x == 5
 
 
 def test_handle_controls_ignores_piece_actions_during_are(game):
@@ -531,6 +576,14 @@ def test_handle_events_stops_on_escape(game, monkeypatch):
     assert game._handle_events() is False
 
 
+def test_handle_events_stops_on_any_key_after_game_over(game, monkeypatch):
+    game._game_over = True
+    key_event = _key_event(pg.KEYDOWN, KEY.LEFT)
+    monkeypatch.setattr(pg.event, "get", lambda: [key_event])
+
+    assert game._handle_events() is False
+
+
 def test_handle_events_forwards_other_events_to_the_controls(game, monkeypatch):
     forwarded = []
     monkeypatch.setattr(game, "_handle_controls", forwarded.append)
@@ -564,6 +617,19 @@ def test_update_hides_the_piece_during_are(game, monkeypatch):
 
     assert game.update() is True
     assert game._are_timer == 16
+
+
+def test_update_freezes_the_board_after_game_over(game, monkeypatch):
+    monkeypatch.setattr(pg.event, "get", lambda: [])
+    preview = game._next_polyomino
+    game._in_are = True
+    game._are_duration = 0
+    game._game_over = True
+    y_before = game._polyomino.y
+
+    assert game.update() is True
+    assert game._polyomino.y == y_before
+    assert game._polyomino is not preview
 
 
 def test_update_spawns_the_next_piece_when_are_ends(game, monkeypatch):

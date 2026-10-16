@@ -19,7 +19,12 @@ This is an overview of **what** is left, not how to do it. Tick a box (`[x]`) wh
 ## Core gameplay still missing
 - [x] Correct piece RNG — NES-style anti-repeat reroll (currently a uniformly random shape, no reroll)
 - [ ] Initial delay for the first piece. When the first piece spawns, it should for about 1-2 seconds there, before falling.
-- [ ] Game-over detection and handling (no top-out check yet)
+- [x] Game-over detection and handling (no top-out check yet)
+    - [x] Top-out: when the next piece spawns onto occupied cells, set a game-over flag (no UI yet)
+    - [x] Lock-out: a piece that locks entirely in the hidden rows also ends the game
+    - [x] Freeze on game over: stop gravity, DAS, and piece input, but keep rendering
+    - [x] Game-over message drawn over the board
+    - [x] After game over: a key press exits the game loop (returning to a menu comes later)
 - [ ] Pause game
 - [ ] Soft-drop and hard-drop points added to score (config values exist but are unused)
 - [ ] Hard-drop enable/disable option

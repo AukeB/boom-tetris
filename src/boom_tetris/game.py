@@ -37,6 +37,8 @@ class Game:
         _soft_drop_speed (float): Milliseconds per cell while soft dropping.
         _das_delay (dict[str, float]): Milliseconds before auto-repeat starts.
         _auto_repeat_rate (dict[str, float]): Milliseconds between repeats.
+        _game_over (bool): Whether the game has ended because a new piece could
+            not spawn.
         _in_are (bool): Whether the entry delay after a lock is running.
         _are_timer (float): Milliseconds spent in the entry delay so far.
         _are_duration (float): Length of the entry delay in milliseconds.
@@ -117,6 +119,9 @@ class Game:
         # Manual correction for soft drop speed.
         self._das_delay["DOWN"] = self._soft_drop_speed
         self._auto_repeat_rate["DOWN"] = self._soft_drop_speed
+
+        # Game over (set when a new piece cannot spawn).
+        self._game_over = False
 
         # ARE (Entry/appearance delay after a piece locks).
         self._in_are = False
@@ -249,6 +254,10 @@ class Game:
         # Bottom-most row of the piece sets the entry-delay length.
         lock_row = max(self._polyomino.y + block[1] for block in self._polyomino)
 
+        # A piece locked entirely in the hidden rows is a lock-out.
+        if lock_row < self._config.BOARD.DIMENSIONS.ROWS_HIDDEN:
+            self._game_over = True
+
         # Place the polyomino on the board.
         self._board.place(self._polyomino)
 
@@ -331,11 +340,17 @@ class Game:
                 self._hold_timer[direction] = 0
 
     def _spawn_next_polyomino(self) -> None:
-        """Activate the previewed piece and create a new preview piece."""
+        """Activate the previewed piece and create a new preview piece.
+
+        Sets the game-over flag if the piece cannot fit at the spawn position.
+        """
         spawn_x = self._config.POLYOMINO.SPAWN_POSITION[0]
         spawn_y = self._config.POLYOMINO.SPAWN_POSITION[1]
         self._next_polyomino.x, self._next_polyomino.y = (spawn_x, spawn_y)
         self._polyomino = self._next_polyomino
+
+        if self._board.collision(self._polyomino):
+            self._game_over = True
 
         next_x = self._config.POLYOMINO.SPAWN_POSITION_NEXT[0]
         next_y = self._config.POLYOMINO.SPAWN_POSITION_NEXT[1]
@@ -383,8 +398,8 @@ class Game:
             elif event.key == KEY.DOWN:
                 self._update_key_hold("DOWN", is_pressed=True)
 
-            # No controllable piece exists during the entry delay.
-            if self._in_are:
+            # No controllable piece exists during the entry delay or after game over.
+            if self._in_are or self._game_over:
                 return
 
             # Horizontal and vertical movement.
@@ -452,6 +467,10 @@ class Game:
         """
 
         for event in pg.event.get():
+            # Any key press ends the session once the game is over.
+            if self._game_over and event.type == pg.KEYDOWN:
+                return False
+
             if (
                 event.type == pg.QUIT
                 or event.type == pg.KEYDOWN
@@ -551,19 +570,24 @@ class Game:
             next_block_rect = self._board.cell_rect.copy()
             self._renderer.draw_polyomino(self._next_polyomino, next_block_rect)
 
+            if self._game_over:
+                self._renderer.draw_game_over(rect=self._board.rect)
+
         dt = self._clock.tick(self._frame_rate)
 
-        if self._in_are:
-            self._charge_das(dt)
-            self._are_timer += dt
+        # Once the game is over, the board stays frozen but keeps rendering.
+        if not self._game_over:
+            if self._in_are:
+                self._charge_das(dt)
+                self._are_timer += dt
 
-            if self._are_timer >= self._are_duration:
-                self._in_are = False
-                self._are_timer = 0
-                self._spawn_next_polyomino()
-        else:
-            self._handle_timers()
-            self._update_das(dt=dt)
+                if self._are_timer >= self._are_duration:
+                    self._in_are = False
+                    self._are_timer = 0
+                    self._spawn_next_polyomino()
+            else:
+                self._handle_timers()
+                self._update_das(dt=dt)
 
         keep_running = self._handle_events()
 

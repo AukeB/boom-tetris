@@ -188,6 +188,20 @@ class Renderer:
         text_rect = text_surface.get_rect(center=rect.center)
         self._surface.blit(text_surface, text_rect)
 
+    def draw_game_over(self, rect: pg.Rect) -> None:
+        """Draw a centered GAME OVER banner over the given area.
+
+        Args:
+            rect (pg.Rect): Area the banner is centered in, usually the board.
+        """
+
+        banner_rect = rect.copy()
+        banner_rect.height = self._config.BOARD.CELL.HEIGHT * 2
+        banner_rect.center = rect.center
+
+        self.draw_rect(rect=banner_rect, color=self._config.BOARD.COLOR.BACKGROUND)
+        self.draw_text(text="GAME OVER", rect=banner_rect)
+
     def draw_label_and_value(
         self, label: str, value: str, rect: pg.Rect, color: list[int] | None = None
     ) -> None:

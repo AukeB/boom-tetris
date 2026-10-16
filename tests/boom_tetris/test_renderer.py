@@ -169,3 +169,21 @@ def test_draw_label_and_value_draws_label_above_value(renderer, monkeypatch):
 
     assert [text for text, _ in texts] == ["SCORE", "000040"]
     assert texts[0][1].centery < texts[1][1].centery
+
+
+# Testing the "draw_game_over" method.
+
+
+def test_draw_game_over_draws_banner_centered_in_the_rect(renderer, monkeypatch):
+    texts = []
+    monkeypatch.setattr(
+        renderer,
+        "draw_text",
+        lambda text, rect, color=None: texts.append((text, rect)),
+    )
+    area = pg.Rect(100, 100, 200, 400)
+
+    renderer.draw_game_over(rect=area)
+
+    assert [text for text, _ in texts] == ["GAME OVER"]
+    assert texts[0][1].center == area.center
