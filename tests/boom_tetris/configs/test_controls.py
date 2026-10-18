@@ -2,7 +2,7 @@
 
 import pygame as pg
 
-from src.boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS
+from boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS
 
 # Testing the "SINGLE_PLAYER_CONTROLS" mapping.
 

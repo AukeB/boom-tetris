@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.boom_tetris.utils.utils_game import (
+from boom_tetris.utils.utils_game import (
     compute_first_level_advancement,
     convert_drop_frames_to_time,
     frames2ms,

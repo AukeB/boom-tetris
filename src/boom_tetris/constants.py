@@ -3,19 +3,22 @@
 from collections import namedtuple
 from pathlib import Path
 
-# Main configuration relative file path.
-CONFIG_SOURCE_FILE_PATH = Path("src/boom_tetris/configs/config_source.yaml")
-CONFIG_RUNTIME_FILE_PATH = Path("src/boom_tetris/configs/config_runtime.yaml")
+_PACKAGE_DIRECTORY = Path(__file__).parent
 
-# Polyomino properpties paths.
-TRIOMINO_PROPERTIES_FILE_PATH = Path("src/boom_tetris/configs/triomino_properties.json")
+# Main configuration file paths.
+CONFIG_SOURCE_FILE_PATH = _PACKAGE_DIRECTORY / "configs" / "config_source.yaml"
+CONFIG_RUNTIME_FILE_PATH = _PACKAGE_DIRECTORY / "configs" / "config_runtime.yaml"
 
-TETROMINO_PROPERTIES_FILE_PATH = Path(
-    "src/boom_tetris/configs/tetromino_properties.json"
+# Polyomino properties paths.
+TRIOMINO_PROPERTIES_FILE_PATH = (
+    _PACKAGE_DIRECTORY / "configs" / "triomino_properties.json"
+)
+TETROMINO_PROPERTIES_FILE_PATH = (
+    _PACKAGE_DIRECTORY / "configs" / "tetromino_properties.json"
 )
 
-# Font assets path
-FONT_FILE_PATH = Path("src/boom_tetris/assets/fonts/8-bit-pusab.ttf")
+# Font assets path.
+FONT_FILE_PATH = _PACKAGE_DIRECTORY / "assets" / "fonts" / "8-bit-pusab.ttf"
 
 
 """`Dimensions` refers to the structural properties of a grid, matrix, or

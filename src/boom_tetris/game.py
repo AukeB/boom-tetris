@@ -4,12 +4,12 @@ import math
 
 import pygame as pg
 
-from src.boom_tetris.board import Board
-from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
-from src.boom_tetris.polyomino.polyomino import Polyomino
-from src.boom_tetris.renderer import Renderer
-from src.boom_tetris.utils.utils_game import (
+from boom_tetris.board import Board
+from boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
+from boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.renderer import Renderer
+from boom_tetris.utils.utils_game import (
     compute_first_level_advancement,
     convert_drop_frames_to_time,
     frames2ms,

@@ -2,9 +2,9 @@
 
 import pytest
 
-from src.boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
-from src.boom_tetris.polyomino.polyomino_transformer import PolyominoTransformer
-from src.boom_tetris.utils.utils_dict import DotDict
+from boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
+from boom_tetris.polyomino.polyomino_transformer import PolyominoTransformer
+from boom_tetris.utils.utils_dict import DotDict
 
 DIRECTIONS = {
     "UP": [0, -1],

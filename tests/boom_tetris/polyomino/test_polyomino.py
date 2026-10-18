@@ -4,8 +4,8 @@ import random
 
 import pytest
 
-from src.boom_tetris.polyomino import polyomino as polyomino_module
-from src.boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.polyomino import polyomino as polyomino_module
+from boom_tetris.polyomino.polyomino import Polyomino
 
 
 def _index_with_rotation_type(rotation_type):

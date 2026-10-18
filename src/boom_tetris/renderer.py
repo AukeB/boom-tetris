@@ -4,11 +4,11 @@ from types import TracebackType
 
 import pygame as pg
 
-from src.boom_tetris.board import Board
-from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.constants import FONT_FILE_PATH, Position
-from src.boom_tetris.polyomino.polyomino import Polyomino
-from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
+from boom_tetris.board import Board
+from boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from boom_tetris.constants import FONT_FILE_PATH, Position
+from boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 
 
 class Renderer:

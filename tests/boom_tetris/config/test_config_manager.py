@@ -2,16 +2,16 @@
 
 import pytest
 
-from src.boom_tetris.config import config_manager as config_manager_module
-from src.boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.config.config_model_source import ConfigModelSource
-from src.boom_tetris.constants import (
+from boom_tetris.config import config_manager as config_manager_module
+from boom_tetris.config.config_manager import ConfigManager
+from boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from boom_tetris.config.config_model_source import ConfigModelSource
+from boom_tetris.constants import (
     CONFIG_RUNTIME_FILE_PATH,
     CONFIG_SOURCE_FILE_PATH,
     Position,
 )
-from src.boom_tetris.utils.utils_dict import DotDict
+from boom_tetris.utils.utils_dict import DotDict
 
 WINDOW_SIZE = (1280, 720)
 

@@ -2,9 +2,9 @@
 
 import pytest
 
-from src.boom_tetris.board import Board
-from src.boom_tetris.constants import Dimensions
-from src.boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.board import Board
+from boom_tetris.constants import Dimensions
+from boom_tetris.polyomino.polyomino import Polyomino
 
 
 @pytest.fixture

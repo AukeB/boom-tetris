@@ -3,7 +3,7 @@
 import pytest
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from src.boom_tetris.utils.utils_dict import DotDict, format_for_writing_to_yaml_file
+from boom_tetris.utils.utils_dict import DotDict, format_for_writing_to_yaml_file
 
 # Testing the "format_for_writing_to_yaml_file" function.
 

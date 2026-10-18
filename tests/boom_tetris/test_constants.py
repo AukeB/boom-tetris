@@ -1,6 +1,6 @@
 """Tests for the shared paths and record types in `constants`."""
 
-from src.boom_tetris import constants
+from boom_tetris import constants
 
 # Testing the file path constants.
 

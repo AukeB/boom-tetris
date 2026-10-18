@@ -9,8 +9,8 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 import pygame as pg  # noqa: E402
 import pytest  # noqa: E402
 
-from src.boom_tetris.config import config_manager as config_manager_module  # noqa: E402
-from src.boom_tetris.config.config_manager import ConfigManager  # noqa: E402
+from boom_tetris.config import config_manager as config_manager_module  # noqa: E402
+from boom_tetris.config.config_manager import ConfigManager  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TEST_WINDOW_SIZE = (1280, 720)

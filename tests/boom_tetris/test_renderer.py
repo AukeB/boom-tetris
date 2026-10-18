@@ -3,10 +3,10 @@
 import pygame as pg
 import pytest
 
-from src.boom_tetris import renderer as renderer_module
-from src.boom_tetris.board import Board
-from src.boom_tetris.polyomino.polyomino import Polyomino
-from src.boom_tetris.renderer import Renderer
+from boom_tetris import renderer as renderer_module
+from boom_tetris.board import Board
+from boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.renderer import Renderer
 
 
 @pytest.fixture

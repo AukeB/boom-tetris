@@ -4,16 +4,16 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
-from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.config.config_model_source import ConfigModelSource
-from src.boom_tetris.constants import (
+from boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from boom_tetris.config.config_model_source import ConfigModelSource
+from boom_tetris.constants import (
     CONFIG_RUNTIME_FILE_PATH,
     CONFIG_SOURCE_FILE_PATH,
     Position,
 )
-from src.boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
-from src.boom_tetris.utils.utils_dict import DotDict, format_for_writing_to_yaml_file
-from src.boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
+from boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
+from boom_tetris.utils.utils_dict import DotDict, format_for_writing_to_yaml_file
+from boom_tetris.utils.utils_other import get_window_size_from_screen_resolution
 
 # YAML parser and serializer using ruamel.yaml.
 # This instance allows reading and writing YAML files with indentation preserved.

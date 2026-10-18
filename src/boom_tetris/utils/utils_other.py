@@ -2,7 +2,7 @@
 
 import pygame as pg
 
-from src.boom_tetris.constants import WINDOW_SIZE_SCREEN_FRACTION
+from boom_tetris.constants import WINDOW_SIZE_SCREEN_FRACTION
 
 
 def get_window_size_from_screen_resolution(

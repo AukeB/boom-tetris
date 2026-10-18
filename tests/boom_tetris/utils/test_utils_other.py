@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pygame as pg
 
-from src.boom_tetris.utils.utils_other import (
+from boom_tetris.utils.utils_other import (
     get_window_size_from_screen_resolution,
 )
 

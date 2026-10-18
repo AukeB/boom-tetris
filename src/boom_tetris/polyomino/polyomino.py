@@ -3,9 +3,9 @@
 import random as rd
 from collections.abc import Iterator
 
-from src.boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.constants import CONFIG_RUNTIME_FILE_PATH
-from src.boom_tetris.polyomino.polyomino_transformer import PolyominoTransformer
+from boom_tetris.config.config_manager import ConfigManager
+from boom_tetris.constants import CONFIG_RUNTIME_FILE_PATH
+from boom_tetris.polyomino.polyomino_transformer import PolyominoTransformer
 
 _config_manager = ConfigManager()
 

@@ -3,9 +3,9 @@
 import pygame as pg
 import pytest
 
-from src.boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
-from src.boom_tetris.game import Game
-from src.boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.configs.controls import SINGLE_PLAYER_CONTROLS as KEY
+from boom_tetris.game import Game
+from boom_tetris.polyomino.polyomino import Polyomino
 
 
 @pytest.fixture

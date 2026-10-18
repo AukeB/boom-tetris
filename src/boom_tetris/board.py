@@ -5,9 +5,9 @@ from collections.abc import Iterator, Sequence
 
 import pygame as pg
 
-from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.constants import Dimensions, Position
-from src.boom_tetris.polyomino.polyomino import Polyomino
+from boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from boom_tetris.constants import Dimensions, Position
+from boom_tetris.polyomino.polyomino import Polyomino
 
 
 class Board:

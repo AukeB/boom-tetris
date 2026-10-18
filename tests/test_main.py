@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from src.boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.game import Game
+from boom_tetris.config.config_manager import ConfigManager
+from boom_tetris.game import Game
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 

@@ -1,7 +1,7 @@
 """Entry point: load config, update it, then run the game loop."""
 
-from src.boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.game import Game
+from boom_tetris.config.config_manager import ConfigManager
+from boom_tetris.game import Game
 
 
 def main() -> None:

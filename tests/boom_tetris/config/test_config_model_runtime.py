@@ -3,9 +3,9 @@
 import pytest
 from pydantic import ValidationError
 
-from src.boom_tetris.config.config_manager import ConfigManager
-from src.boom_tetris.config.config_model_runtime import ConfigModelRuntime
-from src.boom_tetris.constants import CONFIG_RUNTIME_FILE_PATH
+from boom_tetris.config.config_manager import ConfigManager
+from boom_tetris.config.config_model_runtime import ConfigModelRuntime
+from boom_tetris.constants import CONFIG_RUNTIME_FILE_PATH
 
 # Testing the "ConfigModelRuntime" model.
 

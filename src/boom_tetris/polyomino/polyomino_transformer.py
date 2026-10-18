@@ -14,11 +14,11 @@ placed directly onto the board.
 
 import json
 
-from src.boom_tetris.constants import (
+from boom_tetris.constants import (
     TETROMINO_PROPERTIES_FILE_PATH,
     TRIOMINO_PROPERTIES_FILE_PATH,
 )
-from src.boom_tetris.utils.utils_dict import DotDict
+from boom_tetris.utils.utils_dict import DotDict
 
 # A cell is represented by coordinates in 2 dimensions, matching
 # `PolyominoGenerator`'s representation.

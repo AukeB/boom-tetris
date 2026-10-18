@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
+from boom_tetris.polyomino.polyomino_generator import PolyominoGenerator
 
 DIRECTIONS = {
     "UP": [0, -1],
